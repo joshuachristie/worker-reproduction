@@ -4,26 +4,22 @@ rm(list = ls())
 #simulation name
 sim_name <- "QL_reproduction_multiple_founder"
 
-# working directory (this is changed by the bash script)
-working_directory <- "/home/jchr1495/honeybee_sex_alleles/QL_reproduction_vs_QL_noreproduction"
-bash_date <- # this is changed by the bash script in format date +"%Y%m%d"
-function_file <- sprintf("%s/%s_%s_functions.R",working_directory,bash_date,sim_name)
-
-# output directory path
-output_directory <- #also changed by the bash script
-  
+# get and create directories, load functions file
+working_directory <- getwd()
+function_file <- sprintf("%s/%s_functions.R", working_directory, sim_name)
+dir.create(file.path(working_directory, "/user_data/"), showWarnings = FALSE)
+output_directory <- sprintf("%s/user_data/", getwd())
 source(function_file)
 
 #LOAD PACKAGES
 require("doMC")
-#require("doRNG")
 require("foreach")
 
 # PARAMETERS
 #starting number of colonies
 N_starting_population <- 1 
-#number of alleles in population (10 and 20)
-number_alleles <- 10 
+#number of alleles in population
+number_alleles <- 15
 #number of drones each queen mates with
 number_drone_matings <- 25
 #cost to colony of producing diploid (dead) males
@@ -34,19 +30,19 @@ generations_before_invasion <- 4
 number_generations <- 6
 generations_after_invasion <- number_generations - generations_before_invasion
 #proportion of swarms that become queen-less
-probability_QL_colony <- 0.16
+probability_QL_colony <- 0.3
 #probability that queen AND colony survives each generation
 prob_queen_survives <- 1 - probability_QL_colony
 #mean swarms per colony
-average_swarms <- 5
+average_swarms <- 4
 #counter to record generation
 counter <- 1
 #initial distribution alleles (assume alleles are at balancing selection equilibrium - i.e. even frequency)
 initial_distribution_alleles <- rep(1/number_alleles,number_alleles) 
 #number of monte carlo replicates
-num_trials <- 10000
+num_trials <- 100
 #number of cores
-num_cores <- 24
+num_cores <- 2
 #set seed (doRNG is reproducible)
 seed <- 1
 #set up parallel backend
@@ -266,7 +262,7 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
   
 } #this marks the end of the foreach loop
 
-filename <- sprintf("%s/%s_%s_na%d_ch%d_as%d_pq%d_dm%d.RData",
-                    output_directory,bash_date,sim_name,number_alleles,cost_homozoygosity*100,average_swarms,probability_QL_colony*100,number_drone_matings)
+filename <- sprintf("%s/%s_na%d_ch%d_as%d_pq%d_dm%d.RData",
+                    output_directory,sim_name,number_alleles,cost_homozoygosity*100,average_swarms,probability_QL_colony*100,number_drone_matings)
 save(results, file = filename)
 
