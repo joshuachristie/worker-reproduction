@@ -1,0 +1,9 @@
+* Simulation code and data for /Workers’ sons rescue genetic diversity at the sex locus in an invasive honey bee population/ by Gloag et al.
+
+** Manuscript data and analysis script
+
+Data underlying Tables 1, S3, and S4 is in ~/manuscript_data~. To produce a summary file of the data, run ~analysis.R~, making sure that your ~R~ working directory contains ~analysis.R~ and ~/manuscript_data~. After running ~analysis.R~, the summary file will appear in ~/manuscript_data~.
+
+** Running simulations with new sets of parameter values
+
+To run simulations with your own sets of parameter values, you can alter the parameter values at the top of the ~.R~ scripts. To run a simulation with a single source colony and worker reproduction (for example), enter ~source('QL_reproduction_script.R')~. Ensure that the working directory contains both the script and corresponding functions file. Any simulations that you run will show up in ~/user_data~ as ~.RData~ files.
