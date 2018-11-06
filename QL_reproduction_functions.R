@@ -30,6 +30,20 @@ chooseDroneAlleles <- function(population, N, number_alleles, number_drone_matin
     return(population)
 }
 
+recordAlleleFrequencies <- function(population, N, number_alleles, counter){
+    ## get queen allele frequencies
+    queen_allele_frequencies[counter, ] <- tabulate(bin = population[ , 1:2], nbins = number_alleles) / (N * 2)
+    
+    ## drone alleles are stored as proportions not counts so use colMeans (drop = F prevents error when N is 1)
+    drone_allele_frequencies[counter, ] <- colMeans(population[,3:(number_alleles + 2), drop = FALSE])
+    
+    stopifnot( sum(queen_allele_frequencies) == 1 )
+    stopifnot( sum(drone_allele_frequencies) == 1 )
+
+    return(population)
+
+}
+
 generate_new_population <- function(swarming_vector,population,N,number_alleles,number_drone_matings,
                                     prob_queen_survives,cost_homozoygosity,probability_QL_colony){
     

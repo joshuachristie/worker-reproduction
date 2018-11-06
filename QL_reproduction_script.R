@@ -71,38 +71,24 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
         ## choose queen alleles (using alleles from source population---initial_distribution_alleles)
         population <- chooseQueenAlleles(population, N, number_alleles, initial_distribution_alleles)
         
-        ## choose which drones each queen mates with (also from source population)
+K        ## choose which drones each queen mates with (also from source population)
         population <- chooseDroneAlleles(population, N, number_alleles, number_drone_matings, initial_distribution_alleles)
         
-        ## calculate colony fitnesses (for queen-less colonies, fitness only affects drone production)
-        for (ii in 1:N){
-                                        # determine proportion of homozygosity by checking each queen allele and multiplying it by the corresponding drone allele
-                                        # each queen allele contributes half the total homozygosity and total homozygosity is multipled by its cost
-            population[ii,number_alleles + 3] <- 1 - (((0.5 * population[ii,population[ii,1] + 2]) + 
-                                                       (0.5 * population[ii,population[ii,2] + 2])) * cost_homozoygosity)
-            
-            population[ii,number_alleles + 4] <- 1 #first colony is queenright (1 = QR, 0 = QL, delete row = dead)
-        }
+        ## get colony fitnesses
+        population <- getColonyFitnesses(population, N, number_alleles, cost_homozygosity)
         
-                                        #record information about the simulation
-        queen_allele_frequencies[counter,] <- sort(tabulate(bin = population[,1:2],nbins = number_alleles) /
-                                                   (N * 2), decreasing = TRUE) #counts, ordered from highest freq to lowest
+        ## first colony is queenright
+        population <- setColonyQueenStatus(population, number_alleles, 1, 1)
         
-                                        #drone alleles are stored as proportions not counts so use colMeans
-                                        #if N == 1, colMeans throws an error (array becomes vector and it requires 2 dim object) so use drop = FALSE
-        drone_allele_frequencies[counter,] <- sort(colMeans(population[,3:(number_alleles + 2), drop = FALSE]),decreasing = TRUE) 
-        
-        population_size[counter] <- N
-        
-        original_colony <- population[1,]
-        
-        original_queen_survival[counter] <- identical(population[1,],original_colony)
-        
+        ## record information about allele frequencies
+        population <- recordAlleleFrequencies(population, N, number_alleles, counter)
+
         counter <- counter + 1
-        
+
+        ## INVASION ##
         for (generationloop in 1:number_generations){
             
-                                        #logistic growth rate (depends on population size, we include both QL and QR colonies)
+            ## logistic growth rate (depends on population size, we include both QL and QR colonies)
             average_growth_rate <- average_swarms 
                                         # growth rate weighted by colony fitness (only QR)
             weighted_growth_rate <- average_growth_rate * population[,number_alleles + 3] 
