@@ -30,6 +30,25 @@ chooseDroneAlleles <- function(population, N, number_alleles, number_drone_matin
     return(population)
 }
 
+getColonyFitnesses <- function(population, N, number_alleles, cost_homozygosity){
+    ## calculate colony fitnesses (for queen-less colonies, fitness only affects drone production)
+    for (i in 1:N){
+        ## determine proportion of homozygosity by checking each queen allele and multiplying it by the corresponding drone allele
+        ## each queen allele contributes half the total homozygosity and total homozygosity is multipled by its cost
+        population[i,number_alleles + 3] <- 1 - (((0.5 * population[i,population[i,1] + 2]) + 
+                                                   (0.5 * population[i,population[i,2] + 2])) * cost_homozoygosity)
+        
+    }
+    return(population)
+}
+
+setColonyQueenStatus <- function(population, number_alleles, index, queen_status){
+    ## set colony status
+    ## 1 = QR, 0 = QL, delete row = dead
+    population[index, number_alleles + 4] <- queen_status 
+    return(population)        
+}
+
 recordAlleleFrequencies <- function(population, N, number_alleles, counter){
     ## get queen allele frequencies
     queen_allele_frequencies[counter, ] <- tabulate(bin = population[ , 1:2], nbins = number_alleles) / (N * 2)
