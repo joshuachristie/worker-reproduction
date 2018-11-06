@@ -44,25 +44,17 @@ registerDoMC(cores = num_cores)
 
 results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% { 
     
-    extinction_counter = 0
-    
     repeat { #the population can go extinct - if this occurs, I want to repeat the simulation 
-        
-        ## initialise objects to store information about the simulation
+
         temp_list <- list()
-
-        queen_allele_frequencies <- matrix(numeric((number_generations + 1) * number_alleles),
-                                           nrow = number_generations + 1,ncol = number_alleles)
-
-        drone_allele_frequencies <- matrix(numeric((number_generations + 1) * number_alleles),
-                                           nrow = number_generations + 1,ncol = number_alleles)
-
-        original_queen_survival <- numeric(number_generations + 1)
+        ## initialise objects to store information about the simulation
+        queen_allele_frequencies <- matrix(numeric(number_alleles), nrow = 1, ncol = number_alleles)
+        drone_allele_frequencies <- matrix(numeric(number_alleles), nrow = 1, ncol = number_alleles)
+        simulations_with_extinctions <- NULL
+        generation_all_QR_colonies_lost <- NULL
         
-        population_size <- NULL
-        
-        N <- N_starting_population
-        
+        ## INITIALISE INVADING COLONY ##
+        N <- N_starting_population ## population size
         counter <- 1
         
         ## produce population matrix 
@@ -101,7 +93,9 @@ K        ## choose which drones each queen mates with (also from source populati
             
                                         #is the population extinct?
             if (population == 'extinct'){ 
-                
+## i want to record data from those simulations with extinct poulations now                
+                counter <- counter + 1
+
                 break #breaks out of for 1:number_generations loop
                 
             } else { #not extinct, proceed normally
@@ -116,10 +110,6 @@ K        ## choose which drones each queen mates with (also from source populati
                                         #drone alleles are stored as proportions not counts so use colMeans
                                         #if N == 1, colMeans throws an error (array becomes vector and it requires 2 dim object) so use drop = FALSE
                 drone_allele_frequencies[counter,] <- sort(colMeans(population[,3:(number_alleles + 2), drop = FALSE]),decreasing = TRUE) 
-                
-                population_size[counter] <- N
-                
-                original_queen_survival[counter] <- identical(population[1,],original_colony)
                 
                 counter <- counter + 1
             } 
@@ -137,6 +127,7 @@ K        ## choose which drones each queen mates with (also from source populati
         
                                         #this code is only executed if the population == 'extinct'
         extinction_counter <- extinction_counter + 1
+        ## record some information here
         
     } #this marks the end of the repeat loop
     
@@ -144,9 +135,8 @@ K        ## choose which drones each queen mates with (also from source populati
     
     temp_list[[1]] <- queen_allele_frequencies
     temp_list[[2]] <- drone_allele_frequencies
-    temp_list[[3]] <- population_size
+    
     temp_list[[4]] <- extinction_counter
-    temp_list[[5]] <- sum(original_queen_survival)
     
     results <- temp_list
     

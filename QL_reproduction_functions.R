@@ -1,10 +1,10 @@
 chooseQueenAlleles <- function(population, N, number_alleles, allele_distribution){
     ## choose queen alleles (cols 1 and 2 of population matrix)
-    for (ii in 1:N){
-        population[ii,1:2] <- sample(1:number_alleles, 2, replace = TRUE, prob = allele_distribution)
+    for (i in 1:N){
+        population[i,1:2] <- sample(1:number_alleles, 2, replace = TRUE, prob = allele_distribution)
 
-        while (population[ii,1] == population[ii,2]){ #if homozygous, 'kill' and choose again
-            population[ii,1:2] <- sample(1:number_alleles, 2, replace = TRUE, prob = allele_distribution)
+        while (population[i,1] == population[i,2]){ #if homozygous, 'kill' and choose again
+            population[i,1:2] <- sample(1:number_alleles, 2, replace = TRUE, prob = allele_distribution)
         }
 
     }
@@ -20,8 +20,8 @@ chooseDroneAlleles <- function(population, N, number_alleles, number_drone_matin
     ## transform these alleles into proportions
     drone_proportions <- matrix(numeric(N * number_alleles),nrow = N, ncol = number_alleles)
     
-    for (ii in 1:N){
-        drone_proportions[ii,] <- tabulate(bin = sampled_drones[ii,],nbins = number_alleles) / number_drone_matings
+    for (i in 1:N){
+        drone_proportions[i,] <- tabulate(bin = sampled_drones[i,],nbins = number_alleles) / number_drone_matings
     }
     
     ## cols 3:(number_alleles + 2) represent the spermathecal contents
@@ -90,7 +90,8 @@ generate_new_population <- function(swarming_vector,population,N,number_alleles,
     
                                         #at this point, the population can go extinct. If it does, I want to escape the function and
                                         # repeat the foreach loop in the main script (so that I get 500 simulations in which the population does not go extinct).
-    if (N_new_generation == 0){ #population is extinct
+    ## ADD HERE A CONDITION THAT THERE ARE QR COLONIES (OTHERWISE POPULATION WILL GO EXTINCT THE NEXT GENERATION)
+    if (N_new_generation == 0){ #population is extinct 
         
         population <- 'extinct' #for conditional statement in main script
         return(population) #exit function
