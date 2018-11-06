@@ -6,7 +6,8 @@ sim_name <- "QL_no_reproduction"
 
 # get and create directories, load functions file
 working_directory <- getwd()
-function_file <- sprintf("%s/%s_functions.R", working_directory, sim_name)
+bash_date <- format(Sys.time(),format="%Y%m%d")
+function_file <- sprintf("%s/%s_%s_functions.R", working_directory, bash_date, sim_name)
 dir.create(file.path(working_directory, "/user_data/"), showWarnings = FALSE)
 output_directory <- sprintf("%s/user_data/", getwd())
 source(function_file)
@@ -181,8 +182,8 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
   
 } #this marks the end of the foreach loop
 
-filename <- sprintf("%s/%s_na%d_ch%d_as%d_pq%d_dm%d.RData",
-                    output_directory,sim_name,number_alleles,cost_homozoygosity*100,average_swarms,probability_QL_colony*100,number_drone_matings)
+filename <- sprintf("%s/%s_%s_na%d_ch%d_as%d_pq%d_dm%d.RData",
+                    output_directory,bash_date,sim_name,number_alleles,cost_homozoygosity*100,average_swarms,probability_QL_colony*100,number_drone_matings)
 save(results, file = filename)
 
 
