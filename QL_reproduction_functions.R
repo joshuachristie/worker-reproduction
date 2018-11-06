@@ -1,3 +1,16 @@
+chooseQueenAlleles <- function(population, N, number_alleles, allele_distribution){
+    ## choose queen alleles (cols 1 and 2 of population matrix)
+    for (ii in 1:N){
+        population[ii,1:2] <- sample(1:number_alleles, 2, replace = TRUE, prob = allele_distribution)
+
+        while (population[ii,1] == population[ii,2]){ #if homozygous, 'kill' and choose again
+            population[ii,1:2] <- sample(1:number_alleles, 2, replace = TRUE, prob = allele_distribution)
+        }
+
+    }
+    return(population)
+}
+
 generate_new_population <- function(swarming_vector,population,N,number_alleles,number_drone_matings,
                                     prob_queen_survives,cost_homozoygosity,probability_QL_colony){
     
