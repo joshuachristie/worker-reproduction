@@ -50,10 +50,13 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
         
         ## initialise objects to store information about the simulation
         temp_list <- list()
+
         queen_allele_frequencies <- matrix(numeric((number_generations + 1) * number_alleles),
                                            nrow = number_generations + 1,ncol = number_alleles)
+
         drone_allele_frequencies <- matrix(numeric((number_generations + 1) * number_alleles),
                                            nrow = number_generations + 1,ncol = number_alleles)
+
         original_queen_survival <- numeric(number_generations + 1)
         
         population_size <- NULL
@@ -65,32 +68,13 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
         ## produce population matrix 
         population <- matrix(numeric(N * (2 + number_alleles + 2)),nrow = N, ncol = 2 + number_alleles + 2)
         
-        ## choose queen alleles
-        population <- chooseQueenAlleles(population, N, number_alleles, allele_distribution)
-
-        for (ii in 1:N){
-            population[ii,1:2] <- sample(1:number_alleles, 2, replace = TRUE, prob = initial_distribution_alleles)
-            
-            while (population[ii,1] == population[ii,2]){ #if homozygous, 'kill' and choose again
-                population[ii,1:2] <- sample(1:number_alleles, 2, replace = TRUE, prob = initial_distribution_alleles)
-            }
-        }
+        ## choose queen alleles (using alleles from source population---initial_distribution_alleles)
+        population <- chooseQueenAlleles(population, N, number_alleles, initial_distribution_alleles)
         
-                                        #choose which drones each queen mates with 
-        sampled_drones <- 
-            matrix(sample(1:number_alleles,N * number_drone_matings,replace = TRUE, 
-                          prob = initial_distribution_alleles), nrow = N, ncol = number_drone_matings)
+        ## choose which drones each queen mates with (also from source population)
+        population <- chooseDroneAlleles(population, N, number_alleles, number_drone_matings, initial_distribution_alleles)
         
-                                        #transform these alleles into proportions
-        drone_proportions <- matrix(numeric(N * number_alleles),nrow = N, ncol = number_alleles)
-        for (ii in 1:N){
-            drone_proportions[ii,] <- tabulate(bin = sampled_drones[ii,],nbins = number_alleles) / number_drone_matings
-        }
-        
-                                        #cols 3:(number_alleles + 2) represent the spermathecal contents
-        population[,3:(number_alleles + 2)] <- drone_proportions
-        
-                                        #calculate colony fitnesses (for queen-less colonies, fitness only affects drone production)
+        ## calculate colony fitnesses (for queen-less colonies, fitness only affects drone production)
         for (ii in 1:N){
                                         # determine proportion of homozygosity by checking each queen allele and multiplying it by the corresponding drone allele
                                         # each queen allele contributes half the total homozygosity and total homozygosity is multipled by its cost
