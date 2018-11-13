@@ -48,8 +48,10 @@ setupDaughterColony <- function(population, new_population, old_colony_ID, numbe
 }
 
 chooseDroneAlleles <- function(population, colony_ID, number_alleles, number_drone_matings, allele_distribution){
-    ## choose which drones the queen mates with, turn them into proportions, and add them to population
-    sampled_drones <- sample(1:number_alleles, number_drone_matings, replace = TRUE)
+    ## choose drones that mate with the queen, turn allele IDs into proportions, and add the queen's spermathecal contents to population
+    
+    ## sample the number_alleles in the population, in proportion to the drone allele_distribution, number_drone_matings times
+    sampled_drones <- sample(1:number_alleles, number_drone_matings, replace = TRUE, prob = allele_distribution)
     ## transform these alleles into proportions
     drone_proportions <- tabulate(bin = sampled_drones, nbins = number_alleles) / number_drone_matings
     ## cols 3:(number_alleles + 2) represent the spermathecal contents
