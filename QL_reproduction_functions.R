@@ -1,12 +1,12 @@
-chooseQueenAlleles <- function(population, N, number_alleles, allele_distribution){
-    ## choose queen alleles (cols 1 and 2 of population matrix)
-    for (i in 1:N){
-        population[i,1:2] <- sample(1:number_alleles, 2, replace = TRUE, prob = allele_distribution)
+initialiseQueenAllelesFromSourcePop <- function(population, number_alleles, initialise_distribution_alleles){
 
-        while (population[i,1] == population[i,2]){ #if homozygous, 'kill' and choose again
-            population[i,1:2] <- sample(1:number_alleles, 2, replace = TRUE, prob = allele_distribution)
+    repeat{ ## females must be heterozygous
+        ## choose queen alleles from source population
+        population[1, 1:2] <- sample(1:number_alleles, 2, replace = TRUE, prob = initial_distribution_alleles)
+        if ( population[1, 1] != population[1, 2] ){ ## heterozygous
+            break
         }
-
+        
     }
     return(population)
 }
