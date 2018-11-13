@@ -102,6 +102,13 @@ generate_new_population <- function(swarming_vector,population,N,number_alleles,
     
                                         #determine number of daughter colonies (from QR parents only)
     N_daughter_colonies <- sum(swarming_vector[population[,number_alleles + 4] == 1]) 
+
+testAgainstRandomNumber <- function(threshold){
+
+    return( runif(1) < threshold )
+
+}
+
     
                                         #determine which colonies survive intact (queen + colony)
     queenright_survival <- runif(N) < #depends on fitness of colony AND on population size
