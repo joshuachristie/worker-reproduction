@@ -66,18 +66,18 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
 
         ## produce population matrix 
         population <- matrix(numeric(N * (2 + number_alleles + 2)),nrow = N, ncol = 2 + number_alleles + 2)
+
+        ## choose queen alleles from the source population
+        population <- initialiseQueenAllelesFromSourcePop(population, number_alleles, initialise_distribution_alleles)
+
+        ## choose which drones the invading queen mates with (also from source population)
+        population <- chooseDroneAlleles(population, colony_ID = 1, number_alleles, number_drone_matings, initial_distribution_alleles)
         
-        ## choose queen alleles (using alleles from source population---initial_distribution_alleles)
-        population <- chooseQueenAlleles(population, N, number_alleles, initial_distribution_alleles)
-        
-K        ## choose which drones each queen mates with (also from source population)
-        population <- chooseDroneAlleles(population, N, number_alleles, number_drone_matings, initial_distribution_alleles)
-        
-        ## get colony fitnesses
-        population <- getColonyFitnesses(population, N, number_alleles, cost_homozygosity)
+        ## calculate colony fitness of invading colony
+        population <- calculateColonyFitness(population, colony_ID = 1, number_alleles, cost_homozygosity)
         
         ## first colony is queenright
-        population <- setColonyQueenStatus(population, number_alleles, 1, 1)
+        population <- setColonyQueenStatus(population, number_alleles, colony_ID = 1, queen_status = 1)
         
         ## record information about allele frequencies
         population <- recordAlleleFrequencies(population, N, number_alleles, counter)
