@@ -11,17 +11,6 @@ initialiseQueenAllelesFromSourcePop <- function(population, number_alleles, init
     return(population)
 }
 
-chooseDroneAlleles <- function(population, N, number_alleles, number_drone_matings, allele_distribution){
-    ## choose which drones the queen mates with, turn them into proportions, and add them to population
-    sampled_drones <- 
-        matrix(sample(1:number_alleles,N * number_drone_matings,replace = TRUE, 
-                      prob = allele_distribution), nrow = N, ncol = number_drone_matings)
-    
-    ## transform these alleles into proportions
-    drone_proportions <- matrix(numeric(N * number_alleles),nrow = N, ncol = number_alleles)
-    
-    for (i in 1:N){
-        drone_proportions[i,] <- tabulate(bin = sampled_drones[i,],nbins = number_alleles) / number_drone_matings
 setupDaughterColony <- function(population, new_population, old_colony_ID, number_alleles, prob_queen_survives){
     ## get vector that I will rbind to new_population
     daughter_queen <- numeric(2 + number_alleles + 2)
@@ -59,8 +48,12 @@ setupDaughterColony <- function(population, new_population, old_colony_ID, numbe
 }
 
 chooseDroneAlleles <- function(population, colony_ID, number_alleles, number_drone_matings, allele_distribution){
+    ## choose which drones the queen mates with, turn them into proportions, and add them to population
+    sampled_drones <- sample(1:number_alleles, number_drone_matings, replace = TRUE)
+    ## transform these alleles into proportions
+    drone_proportions <- tabulate(bin = sampled_drones, nbins = number_alleles) / number_drone_matings
     ## cols 3:(number_alleles + 2) represent the spermathecal contents
-    population[,3:(number_alleles + 2)] <- drone_proportions
+    population[colony_ID, 3:(number_alleles + 2)] <- drone_proportions
     
     return(population)
 }
