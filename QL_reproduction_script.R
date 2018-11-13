@@ -47,10 +47,16 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
     repeat { #the population can go extinct - if this occurs, I want to repeat the simulation 
 
         temp_list <- list()
+
         ## initialise objects to store information about the simulation
         queen_allele_frequencies <- matrix(numeric(number_alleles), nrow = 1, ncol = number_alleles)
-        drone_allele_frequencies <- matrix(numeric(number_alleles), nrow = 1, ncol = number_alleles)
+        
+        worker_laid_drone_allele_distribution <- matrix(numeric(number_alleles), nrow = 1, ncol = number_alleles)
+
+        queen_laid_drone_allele_distribution <- matrix(numeric(number_alleles), nrow = 1, ncol = number_alleles)
+        
         simulations_with_extinctions <- NULL
+        
         generation_all_QR_colonies_lost <- NULL
         
         ## INITIALISE INVADING COLONY ##
