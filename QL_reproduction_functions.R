@@ -58,15 +58,18 @@ chooseDroneAlleles <- function(population, colony_ID, number_alleles, number_dro
     return(population)
 }
 
-getColonyFitnesses <- function(population, N, number_alleles, cost_homozygosity){
-    ## calculate colony fitnesses (for queen-less colonies, fitness only affects drone production)
-    for (i in 1:N){
-        ## determine proportion of homozygosity by checking each queen allele and multiplying it by the corresponding drone allele
-        ## each queen allele contributes half the total homozygosity and total homozygosity is multipled by its cost
-        population[i,number_alleles + 3] <- 1 - (((0.5 * population[i,population[i,1] + 2]) + 
-                                                   (0.5 * population[i,population[i,2] + 2])) * cost_homozoygosity)
-        
-    }
+calculateColonyFitness <- function(population, colony_ID, number_alleles, cost_homozygosity){
+    ## for QR colonies, fitness affects production of drones and daughter queens
+    ## for QL colonies, fitness only affects drone production
+    queen_allele_1_ID <- population[colony_ID, 1]
+    queen_allele_2_ID <- population[colony_ID, 2]
+    ## determine proportion of homozygosity by multiplying each queen allele frequency (0.5) with the corresponding drone allele
+    ## corresponding drone alleles are shifted 2 cols to the right (since the first 2 cols store the queen's genotype)
+    homozygosity_level <- 0.5 * population[colony_ID, queen_allele_ID_1 + 2] + 0.5 * population[colony_ID, queen_allele_ID_2 + 2]
+    homozygosity_cost <- homozygosity_level * cost_homozygosity
+    ## set colony fitness
+    population[colony_ID, number_alleles + 3] <- 1 - homozygosity_cost
+
     return(population)
 }
 
