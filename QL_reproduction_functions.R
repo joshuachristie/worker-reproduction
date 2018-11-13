@@ -22,8 +22,43 @@ chooseDroneAlleles <- function(population, N, number_alleles, number_drone_matin
     
     for (i in 1:N){
         drone_proportions[i,] <- tabulate(bin = sampled_drones[i,],nbins = number_alleles) / number_drone_matings
+setupDaughterColony <- function(population, new_population, old_colony_ID, number_alleles, prob_queen_survives){
+    ## get vector that I will rbind to new_population
+    daughter_queen <- numeric(2 + number_alleles + 2)
+    ## check whether the daughter queen dies or suvives
+    if ( testAgainstRandomNumber(prob_queen_survives) ){ ## daughter queen survives
+        ## get distribution of alleles in her mother's spermatheca
+        spermathecal_contents <- population[old_colony_ID, 3:(number_alleles + 2)]
+        ## denote daughter queen's colony as QR (since she survives)
+        daughter_queen[number_alleles + 4] <- 1
+        
+        repeat { ## females must be heterozygous
+            ## allele of daughter queen that comes from her mother's genotype
+            daughter_queen[1] <- population[old_colony_ID, sample(1:2, 1)]
+            ## allele from daughter queen's mother's spermatheca
+            daughter_queen[2] <- sample(1:number_alleles, 1, prob = spermathecal_contents)
+            ## break out once daughter queen is heterozygous
+            if ( daughter_queen[1] != daughter_queen[2] ){
+                break
+            }
+        }
+        
+    } else {
+        ## daughter queen dies, colony becomes QL---workers for this colony come from the daughter queen's mother
+        ## to capture this, make the "queen" of this QL colony the daughter queen's mother
+        ## need queen genotype (1:2), spermatheca (3:(number_alleles + 2), and colony fitness (number_alleles + 3)
+        ## QL/QR indicator (number_alleles + 4) is initialised as zero (indicating QL), so leave this alone
+        daughter_queen[1:(number_alleles + 3)] <- population[old_colony_ID, 1:(number_alleles + 3)]
     }
     
+    new_population <- rbind(new_population, daughter_queen)
+    return(new_population)
+    ## when the daughter colony remains QR, we still need spermathecal contents
+    ## and colony fitness (for these, we must wait until daughter's mating flight)
+    ## but when the daughter colony becomes immediately QL, the entry is complete
+}
+
+chooseDroneAlleles <- function(population, colony_ID, number_alleles, number_drone_matings, allele_distribution){
     ## cols 3:(number_alleles + 2) represent the spermathecal contents
     population[,3:(number_alleles + 2)] <- drone_proportions
     
