@@ -15,8 +15,6 @@ require("doMC")
 require("foreach")
 
 ## PARAMETERS ##
-## starting number of colonies
-N_starting_population <- 1 
 ## number of alleles in population
 number_alleles <- 15
 ## number of drones each queen mates with
@@ -31,6 +29,8 @@ probability_QL_colony <- 0.3
 prob_queen_survives <- 1 - probability_QL_colony
 ## mean swarms per colony
 average_swarms <- 4
+## proportion of production of drones by QL colonies (relative to QR)
+QL_drone_production <- 1
 ## counter to record generation
 counter <- 1
 ## initial distribution alleles (assume alleles are at balancing selection equilibrium - i.e. even frequency)
@@ -54,9 +54,10 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
         generation_all_QR_colonies_lost <- NULL
         
         ## INITIALISE INVADING COLONY ##
-        N <- N_starting_population ## population size
+        N <- 1 ## population size (initialise with a single invading colony)
+
         counter <- 1
-        
+
         ## produce population matrix 
         population <- matrix(numeric(N * (2 + number_alleles + 2)),nrow = N, ncol = 2 + number_alleles + 2)
         
