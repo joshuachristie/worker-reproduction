@@ -73,10 +73,9 @@ calculateColonyFitness <- function(population, colony_ID, number_alleles, cost_h
     return(population)
 }
 
-setColonyQueenStatus <- function(population, number_alleles, index, queen_status){
-    ## set colony status
-    ## 1 = QR, 0 = QL, delete row = dead
-    population[index, number_alleles + 4] <- queen_status 
+setColonyQueenStatus <- function(population, number_alleles, colony_ID, queen_status){
+    ## set colony status (1 = QR, 0 = QL)
+    population[colony_ID, number_alleles + 4] <- queen_status 
     return(population)        
 }
 
