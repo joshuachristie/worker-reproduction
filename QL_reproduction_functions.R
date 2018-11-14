@@ -60,6 +60,42 @@ chooseDroneAlleles <- function(population, colony_ID, number_alleles, number_dro
     return(population)
 }
 
+produceDronesQueenright <- function(population, number_alleles, colony_ID, queen_laid_drone_alleles){
+    ## QR colonies produce drones (proportional to colony fitness). Drones come from queen's two alleles
+    ## index into the queen alleles, adding 0.5 (frequency of each allele) multiplied by colony fitness
+    
+    ## initialise vector to store drone alleles from colony i 
+    colony_i_drone_alleles <- numeric(number_alleles)
+    ## add alleles from queen's genotype (adjusted by colony fitness)
+    colony_i_drone_alleles[ population[colony_ID, 1:2] ] <- getColonyFitness(colony_ID, number_alleles, population) * 0.5
+    ## add to queen_laid_drone_alleles
+    queen_laid_drone_alleles <- queen_laid_drone_alleles + colony_i_drone_alleles
+
+    return(queen_laid_drone_alleles)
+}
+
+produceDronesQueenless <- function(population, number_alleles, colony_ID, worker_laid_drone_alleles, QL_drone_production){
+    ## QL colonies produce drones (proportional to colony fitness AND QL_drone_production)
+    ## drones come from workers, which means 0.5 from queen's two alleles (0.25 each) and 0.5 from queen's spermatheca
+    ## the latter is the contribution of the fathers of the workers
+    
+    ## initialise vector to store drone alleles from colony i 
+    colony_i_drone_alleles <- numeric(number_alleles)
+    ## add alleles from queen's genotype (adjusted by colony fitness and multiplied by 0.25 instead of 0.5)
+    colony_i_drone_alleles[ population[colony_ID, 1:2] ] <- getColonyFitness(colony_ID, number_alleles, population) * 0.25
+    ## get spermathecal contents of queen
+    spermathecal_contents <- population[colony_ID, 3:(number_alleles + 2)]
+    ## add alleles from queen's spermatheca (contribution of workers' fathers)
+    colony_i_drone_alleles <- colony_i_drone_alleles + spermathecal_contents *
+        getColonyFitness(colony_ID, number_alleles, population) * 0.5
+    ## account for different output of drones from QL colonies (compared to QR colonies)
+    colony_i_drone_alleles <- colony_i_drone_alleles * QL_drone_production
+    ## add to worker_laid_drone_alleles
+    worker_laid_drone_alleles <- worker_laid_drone_alleles + colony_i_drone_alleles
+
+    return(worker_laid_drone_alleles)
+}
+
 calculateColonyFitness <- function(population, colony_ID, number_alleles, cost_homozygosity){
     ## for QR colonies, fitness affects production of drones and daughter queens
     ## for QL colonies, fitness only affects drone production
