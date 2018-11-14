@@ -60,12 +60,10 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
         generation_all_QR_colonies_lost <- NULL
         
         ## INITIALISE INVADING COLONY ##
-        N <- 1 ## population size (initialise with a single invading colony)
-
         counter <- 1
 
         ## produce population matrix 
-        population <- matrix(numeric(N * (2 + number_alleles + 2)),nrow = N, ncol = 2 + number_alleles + 2)
+        population <- matrix(numeric(2 + number_alleles + 2),nrow = 1, ncol = 2 + number_alleles + 2)
 
         ## choose queen alleles from the source population
         population <- initialiseQueenAllelesFromSourcePop(population, number_alleles, initialise_distribution_alleles)
@@ -80,7 +78,7 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
         population <- setColonyQueenStatus(population, number_alleles, colony_ID = 1, queen_status = 1)
         
         ## record information about allele frequencies
-        population <- recordAlleleFrequencies(population, N, number_alleles, counter)
+        population <- recordAlleleFrequencies(population, 1, number_alleles, counter)
 
         counter <- counter + 1
 
