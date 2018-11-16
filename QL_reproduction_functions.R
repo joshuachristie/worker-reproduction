@@ -135,8 +135,10 @@ generate_new_population <- function(swarming_vector,population,N,number_alleles,
                                     prob_queen_survives,cost_homozoygosity,probability_QL_colony){
     
     swarm_counter <- 1
+isColonyQR <- function(colony_ID, number_alleles, population){
     
     queen_survival <- numeric(N)
+    return( as.logical(population[colony_ID, number_alleles + 4]) )
     
                                         #determine number of daughter colonies (from QR parents only)
     N_daughter_colonies <- sum(swarming_vector[population[,number_alleles + 4] == 1]) 
