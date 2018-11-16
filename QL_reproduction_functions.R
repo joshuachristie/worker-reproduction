@@ -117,7 +117,9 @@ setColonyQueenStatus <- function(population, number_alleles, colony_ID, queen_st
     return(population)        
 }
 
-recordAlleleFrequencies <- function(population, N, number_alleles, counter){
+
+
+recordAlleleFrequencies <- function(population, queen_laid_drone_alleles, worker_laid_drone_alleles, number_alleles, counter){
     ## get queen allele frequencies
     queen_allele_frequencies[counter, ] <- tabulate(bin = population[ , 1:2], nbins = number_alleles) / (N * 2)
     
