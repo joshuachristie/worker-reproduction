@@ -284,6 +284,12 @@ getColonyFitness <- function(colony_ID, number_alleles, population){
 
 }
 
+isColonyExtinct <- function(population, number_alleles){
+    ## test for extinction (either no colonies added (lhs) or those added are QL (rhs))
+    return( !as.logical( nrow(population) ) || !sum( population[ , number_alleles + 4] ) )
+}
+
+generateNewPopulation <- function(population, number_alleles, number_drone_matings,
             
             if (sum(new_population[ii,3:(number_alleles + 2)]) == 0){ # means daughter colony NOT surviving queen
                 ## now I first chose whether the colony goes QR or QL, as this affects where the workers are derived from
