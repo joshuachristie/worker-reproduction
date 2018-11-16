@@ -278,7 +278,12 @@ testAgainstRandomNumber <- function(threshold){
                                         #calculate colony fitness
                                         #assign daughter swarms a QR or QL state
         
-        for (ii in 1:N_new_generation){
+getColonyFitness <- function(colony_ID, number_alleles, population){
+
+    return( population[colony_ID, number_alleles + 3] )
+
+}
+
             
             if (sum(new_population[ii,3:(number_alleles + 2)]) == 0){ # means daughter colony NOT surviving queen
                 ## now I first chose whether the colony goes QR or QL, as this affects where the workers are derived from
