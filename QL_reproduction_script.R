@@ -1,5 +1,5 @@
 rm(list = ls())
-                                        
+
 sim_name <- "QL_reproduction"
 
 ## get and create directories, load functions file
@@ -81,47 +81,47 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
 
         ## INVASION ##
         for (generationloop in 1:number_generations){
-                                        #is the population extinct?
-            if (population == 'extinct'){ 
-## i want to record data from those simulations with extinct poulations now                
-                counter <- counter + 1
 
-                break #breaks out of for 1:number_generations loop
+            ## iterate one generation
+            list_output <- generateNewPopulation(population, number_alleles, number_drone_matings,
+                                                 prob_queen_survives, cost_homozoygosity, QL_drone_production)
+            ## reform population
+            population <- matrix(unlist(list_output[1]), nrow = length(unlist(list_output[1])) / (number_alleles + 4), ncol = number_alleles + 4)
+            
+            ## test for population extinction
+            if ( isColonyExtinct(population, number_alleles) ){ 
                 
-            } else { #not extinct, proceed normally
+                break ## breaks out of for 1:number_generations loop
                 
-                                        #no longer need the old population size 
-                N <- nrow(population)
-                
-                                        #record information about the simulation
-                queen_allele_frequencies[counter,] <- sort(tabulate(bin = population[,1:2],nbins = number_alleles) /
-                                                           (N * 2), decreasing = TRUE) #counts, ordered from highest freq to lowest
-                
-                                        #drone alleles are stored as proportions not counts so use colMeans
-                                        #if N == 1, colMeans throws an error (array becomes vector and it requires 2 dim object) so use drop = FALSE
-                drone_allele_frequencies[counter,] <- sort(colMeans(population[,3:(number_alleles + 2), drop = FALSE]),decreasing = TRUE) 
-                
-                counter <- counter + 1
+            } else { ## not extinct, proceed normally
+                ## record simulation data (queen alleles, worker-laid drone allels, queen-laid drone alleles, population size)
+                queen_allele_frequencies <- rbind( queen_allele_frequencies,
+                                                  tabulate(bin = population[population[ , number_alleles + 4] == 1, 1:2], nbins = number_alleles) /
+                                                  ( NROW( population[population[, number_alleles + 4] == 1] ) * 2 ) )
+                queen_laid_allele_distribution <- rbind( queen_laid_allele_distribution, unlist(list_output[2]) ) ## queen-laid drones
+                worker_laid_allele_distribution <- rbind( worker_laid_allele_distribution, unlist(list_output[3]) ) ## worker-laid drones
+                population_size[length(population_size) + 1] <- NROW(population) ## number of colonies left
             } 
+
+        }
+
+        ## population is either extinct, or viable but finished number_generations
+        if ( isColonyExtinct(population, number_alleles) ) { ## population is extinct
+            ## record number of colonies left
+            population_size[length(population_size) + 1] <- NROW(population)
+            ## record number of generations before extinction
+            generation_all_QR_colonies_lost <- generation_loop
+            ## mark simulation status as "extinct"
+            simulation_extinction_status <- 0
+            ## simulation will "repeat"
+        } else { ## population finished number_generations (don't need to record population size (done above)
+            generation_all_QR_colonies_lost <- generation_loop ## will record number_generations
+            ## mark simulation status as "not extinct"
+            simulation_extinction_status <- 1
+            break ## transfer control to foreach loop (don't want to repeat)
         }
         
-                                        #this code is executed either because the break was triggered (population is extinct) or through normal 
-                                        #termination of the for loop. I don't want to record the former but want to record the latter.
-        
-        if (population != 'extinct'){ #normal termination
-                                        #break out of repeat loop
-            
-            break # transfers control to foreach loop
-            
-        } #if population == 'extinct', record nothing and go back to start of repeat loop
-        
-                                        #this code is only executed if the population == 'extinct'
-        extinction_counter <- extinction_counter + 1
-        ## record some information here
-        
-    } #this marks the end of the repeat loop
-    
-                                        #record simulation 
+    } ## end of the repeat loop
     
     ## record simulation 
     temp_list[[1]] <- queen_allele_frequencies
@@ -133,8 +133,8 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
     
     results <- temp_list
     
-} #this marks the end of the foreach loop
-
+} ## end of the foreach loop
+## NEED TO CHANGE FILENAME
 filename <- sprintf("%s/%s_%s_na%d_ch%d_as%d_pq%d_dm%d.RData",
                     output_directory,bash_date,sim_name,number_alleles,cost_homozoygosity*100,average_swarms,probability_QL_colony*100,number_drone_matings)
 save(results, file = filename)
