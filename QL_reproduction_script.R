@@ -56,22 +56,8 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
         generation_all_QR_colonies_lost <- NULL
         population_size <- NULL
 
-        ## INITIALISE INVADING COLONY ##
-        
-        ## produce population matrix 
-        population <- matrix(numeric(2 + number_alleles + 2),nrow = 1, ncol = 2 + number_alleles + 2)
-
-        ## choose queen alleles from the source population
-        population <- initialiseQueenAllelesFromSourcePop(population, number_alleles, initialise_distribution_alleles)
-
-        ## choose which drones the invading queen mates with (also from source population)
-        population <- chooseDroneAlleles(population, colony_ID = 1, number_alleles, number_drone_matings, initial_distribution_alleles)
-        
-        ## calculate colony fitness of invading colony
-        population <- calculateColonyFitness(population, colony_ID = 1, number_alleles, cost_homozygosity)
-        
-        ## first colony is queenright
-        population <- setColonyQueenStatus(population, number_alleles, colony_ID = 1, queen_status = 1)
+        ## initialise invading population
+        population <- initialiseInvadingColony(number_alleles, initial_distribution_alleles, number_drone_matings, cost_homozygosity)
 
         ## record simulation data (queen alleles, worker-laid drone allels, queen-laid drone alleles, population size)
         queen_allele_frequencies <- rbind( queen_allele_frequencies,

@@ -208,3 +208,23 @@ generateNewPopulation <- function(population, number_alleles, number_drone_matin
     return(list_output)
     
 }
+
+initialiseInvadingColony <- function(number_alleles, initial_distribution_alleles, number_drone_matings, cost_homozygosity){
+    ## set up invading colony with queen alleles and drone matings from a source population    
+
+    ## initialise new colony
+    invading_colony <- matrix(numeric(2 + number_alleles + 2),nrow = 1, ncol = 2 + number_alleles + 2)
+
+    ## choose queen alleles of invader from the source population
+    invading_colony <- initialiseQueenAllelesFromSourcePop(invading_colony, number_alleles, initial_distribution_alleles)
+
+    ## choose which drones the invading queen mates with (also from source population, since she arrives already mated)
+    invading_colony <- chooseDroneAlleles(invading_colony, colony_ID = 1, number_alleles, number_drone_matings, initial_distribution_alleles)
+                                              
+    ## calculate fitness of invading colony
+    invading_colony <- calculateColonyFitness(invading_colony, colony_ID = 1, number_alleles, cost_homozygosity)
+    
+    ## assume colony remains queenright
+    invading_colony <- setColonyQueenStatus(invading_colony, number_alleles, colony_ID = 1, queen_status = 1)
+
+}
