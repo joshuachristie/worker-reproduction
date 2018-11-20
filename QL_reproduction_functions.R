@@ -171,7 +171,7 @@ generateNewPopulation <- function(population, number_alleles, number_drone_matin
                 }
             }
 
-        } else if ( !isColonyQR(colony_ID = i, number_alleles, population) ) { ## it is QL (and become so last generation)
+        } else if ( !isColonyQR(colony_ID = i, number_alleles, population) ) { ## it is QL (and became so last generation)
             ## QL colony does not survive (so don't add to new_population) nor does it produce daughter queens
             ## if QL colony produces drones via workers (proportional to QL_drone_production)
             ## NOTE THAT HERE I NEED TO ADD A SWITCH TO TURN QL WORKER REPRODUCTION OFF AND ON DEPENDING ON WHETHER WORKERS CAN REPRODUCE
