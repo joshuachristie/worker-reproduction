@@ -42,24 +42,20 @@ registerDoMC(cores = num_cores)
 
 results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% { 
     
-    repeat { #the population can go extinct - if this occurs, I want to repeat the simulation 
+    repeat { ## if the population goes extinct, I want to repeat the simulation (to standarize the number of "successful" invasions  
 
         temp_list <- list()
 
         ## initialise objects to store information about the simulation
-        queen_allele_frequencies <- matrix(numeric(number_alleles), nrow = 1, ncol = number_alleles)
-        
-        worker_laid_drone_allele_distribution <- matrix(numeric(number_alleles), nrow = 1, ncol = number_alleles)
-
-        queen_laid_drone_allele_distribution <- matrix(numeric(number_alleles), nrow = 1, ncol = number_alleles)
-        
-        simulations_with_extinctions <- NULL
-        
+        queen_allele_frequencies <- matrix(nrow = 0, ncol = number_alleles)
+        worker_laid_drone_allele_distribution <- matrix(nrow = 0, ncol = number_alleles)
+        queen_laid_drone_allele_distribution <- matrix(nrow = 0, ncol = number_alleles)
+        simulation_extinction_status <- NULL ## 0 for extinct; 1 for no extinction
         generation_all_QR_colonies_lost <- NULL
-        
-        ## INITIALISE INVADING COLONY ##
-        counter <- 1
+        population_size <- NULL
 
+        ## INITIALISE INVADING COLONY ##
+        
         ## produce population matrix 
         population <- matrix(numeric(2 + number_alleles + 2),nrow = 1, ncol = 2 + number_alleles + 2)
 
