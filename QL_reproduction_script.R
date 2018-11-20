@@ -14,31 +14,47 @@ source(function_file)
 require("doMC")
 require("foreach")
 
+################
 ## PARAMETERS ##
+################
+
+## MODEL PARAMETERS ##
 ## number of alleles in population
 number_alleles <- 15
 ## number of drones each queen mates with
 number_drone_matings <- 25
 ## cost to colony of producing diploid (dead) males
 cost_homozoygosity <- 0.05
-## number of generations (each generation = 6 months)
-number_generations <- 6
+#proportion of swarms that become queen-less
+probability_QL_colony <- 0.3
+#probability that queen AND colony survives each generation
+prob_queen_survives <- 1 - probability_QL_colony
 ## proportion of swarms that become queen-less
 probability_QL_colony <- 0.3
 ## probability that queen AND colony survives each generation
 prob_queen_survives <- 1 - probability_QL_colony
 ## mean swarms per colony
 average_swarms <- 4
+## worker reproduction status (TRUE = QL colonies produce workers; FALSE = QL colonies do not produce workers)
+worker_reproduction_status <- TRUE
 ## proportion of production of drones by QL colonies (relative to QR)
 QL_drone_production <- 1
-## initial distribution alleles (assume alleles are at balancing selection equilibrium - i.e. even frequency)
-initial_distribution_alleles <- rep(1 / number_alleles,number_alleles) 
+## distribution alleles in source population (we assume alleles in source population are under strong balancing selection)
+initial_distribution_alleles <- rep(1 / number_alleles,number_alleles) ## each allele present at the same frequency
+## are there multiple founders or a single founder? (if the former, a second colony invades after a delay)
+multiple_founder_status <- TRUE
+## total number of generations (each generation = 6 months)
+number_generations <- 6
+## number of generations before second invasion (if applicable)
+generations_before_invasion <- 4
+## number of generations after second invasion (if applicable)
+generations_after_invasion <- number_generations - generations_before_invasion
+
+## SIMULATION PARAMETERS ##
 ## number of monte carlo replicates
 num_trials <- 100
 ## number of cores
 num_cores <- 2
-## worker reproduction status (TRUE = QL colonies produce workers; FALSE = QL colonies do not produce workers)
-worker_reproduction_status <- TRUE
 ## set up parallel backend
 registerDoMC(cores = num_cores)
 
