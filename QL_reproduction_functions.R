@@ -1,4 +1,4 @@
-initialiseQueenAllelesFromSourcePop <- function(population, number_alleles, initialise_distribution_alleles){
+initialiseQueenAllelesFromSourcePop <- function(population, number_alleles, initial_distribution_alleles){
 
     repeat{ ## females must be heterozygous
         ## choose queen alleles from source population
