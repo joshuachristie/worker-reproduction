@@ -31,8 +31,6 @@ prob_queen_survives <- 1 - probability_QL_colony
 average_swarms <- 4
 ## proportion of production of drones by QL colonies (relative to QR)
 QL_drone_production <- 1
-## counter to record generation
-counter <- 1
 ## initial distribution alleles (assume alleles are at balancing selection equilibrium - i.e. even frequency)
 initial_distribution_alleles <- rep(1 / number_alleles,number_alleles) 
 ## number of monte carlo replicates
