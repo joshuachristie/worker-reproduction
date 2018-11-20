@@ -81,18 +81,6 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
 
         ## INVASION ##
         for (generationloop in 1:number_generations){
-            
-            ## logistic growth rate (depends on population size, we include both QL and QR colonies)
-            average_growth_rate <- average_swarms 
-                                        # growth rate weighted by colony fitness (only QR)
-            weighted_growth_rate <- average_growth_rate * population[,number_alleles + 3] 
-            
-                                        # how many daughter swarms does each colony leave?
-            swarming_vector <- rpois(n = N, lambda = weighted_growth_rate)
-                                        #generate new population
-            population <- generate_new_population(swarming_vector,population,N,number_alleles,number_drone_matings,
-                                                  prob_queen_survives,cost_homozoygosity,probability_QL_colony)
-            
                                         #is the population extinct?
             if (population == 'extinct'){ 
 ## i want to record data from those simulations with extinct poulations now                
