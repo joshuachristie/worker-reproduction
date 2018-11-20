@@ -264,7 +264,7 @@ getColonyFitness <- function(colony_ID, number_alleles, population){
 
 isColonyExtinct <- function(population, number_alleles){
     ## test for extinction (either no colonies added (lhs) or those added are QL (rhs))
-    return( !as.logical( nrow(population) ) || !sum( population[ , number_alleles + 4] ) )
+    return( !as.logical( NROW(population) ) || !sum( population[ , number_alleles + 4] ) )
 }
 
 generateNewPopulation <- function(population, number_alleles, number_drone_matings,
