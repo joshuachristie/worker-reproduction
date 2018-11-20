@@ -135,10 +135,13 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
     
                                         #record simulation 
     
+    ## record simulation 
     temp_list[[1]] <- queen_allele_frequencies
-    temp_list[[2]] <- drone_allele_frequencies
-    
-    temp_list[[4]] <- extinction_counter
+    temp_list[[2]] <- queen_laid_allele_distribution
+    temp_list[[3]] <- worker_laid_allele_distribution
+    temp_list[[4]] <- population_size
+    temp_list[[5]] <- simulation_extinction_status
+    temp_list[[6]] <- generation_all_QR_colonies_lost
     
     results <- temp_list
     
