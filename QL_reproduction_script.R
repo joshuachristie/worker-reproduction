@@ -37,6 +37,8 @@ initial_distribution_alleles <- rep(1 / number_alleles,number_alleles)
 num_trials <- 100
 ## number of cores
 num_cores <- 2
+## worker reproduction status (TRUE = QL colonies produce workers; FALSE = QL colonies do not produce workers)
+worker_reproduction_status <- TRUE
 ## set up parallel backend
 registerDoMC(cores = num_cores)
 
