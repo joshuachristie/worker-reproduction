@@ -107,6 +107,14 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
                 population_size[length(population_size) + 1] <- NROW(population) ## number of colonies left
             } 
 
+            ## condition for a new colony to invade from source population
+            ## (this is the only difference between the single founder and multiple founder scenarios)
+            if ( multiple_founder_status && generation_loop == generations_before_invasion ){
+                ## add new colony from source population to invasive population
+                population <- rbind(population,
+                                    initialiseInvadingColony(number_alleles, initial_distribution_alleles, number_drone_matings, cost_homozygosity) )
+                }
+            
         }
 
         ## population is either extinct, or viable but finished number_generations
