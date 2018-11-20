@@ -70,11 +70,14 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
         
         ## first colony is queenright
         population <- setColonyQueenStatus(population, number_alleles, colony_ID = 1, queen_status = 1)
-        
-        ## record information about allele frequencies
-        population <- recordAlleleFrequencies(population, 1, number_alleles, counter)
 
-        counter <- counter + 1
+        ## record simulation data (queen alleles, worker-laid drone allels, queen-laid drone alleles, population size)
+        queen_allele_frequencies <- rbind( queen_allele_frequencies,
+                                          tabulate(bin = population[population[ , number_alleles + 4] == 1, 1:2], nbins = number_alleles) /
+                                          ( NROW( population[population[, number_alleles + 4] == 1] ) * 2 ) )
+        queen_laid_allele_distribution <- rbind( queen_laid_allele_distribution, unlist(list_output[2]) ) ## queen-laid drones
+        worker_laid_allele_distribution <- rbind( worker_laid_allele_distribution, unlist(list_output[3]) ) ## worker-laid drones
+        population_size[length(population_size) + 1] <- NROW(population) ## number of colonies left
 
         ## INVASION ##
         for (generationloop in 1:number_generations){
