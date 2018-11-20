@@ -200,6 +200,9 @@ generateNewPopulation <- function(population, number_alleles, number_drone_matin
 
     }
 
+    ## sanity check
+    stopifnot(!sum(worker_laid_drone_alleles) && !worker_reproduction_status) ## workers should not reproduce if worker reproduction is turned off
+
     ## in addition to population, I also want to return the drone distributions (for analysis)
     list_output <- list(new_population, queen_laid_drone_alleles, worker_laid_drone_alleles)
     return(list_output)
