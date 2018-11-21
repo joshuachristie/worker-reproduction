@@ -119,7 +119,7 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
                 }
             
         }
-
+ 
         ## population is either extinct, or viable but finished number_generations
         if ( isColonyExtinct(population, number_alleles) ) { ## population is extinct
             ## record number of colonies left
@@ -149,9 +149,9 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
     results <- temp_list
     
 } ## end of the foreach loop
-## NEED TO CHANGE FILENAME
-filename <- sprintf("%s/%s_%s_na%d_ch%d_as%d_pq%d_dm%d.RData",
-                    output_directory,bash_date,sim_name,number_alleles,cost_homozoygosity*100,average_swarms,probability_QL_colony*100,number_drone_matings)
+
+filename <- sprintf("%s/%s_%s_na%d_ch%d_as%d_pq%d_dm%d_qdp%d.RData",
+                    output_directory,bash_date,sim_name,number_alleles,cost_homozoygosity*100,average_swarms,probability_QL_colony*100,number_drone_matings, QL_drone_production)
 save(results, file = filename)
 
 
