@@ -75,7 +75,7 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
         ## initialise invading population
         population <- initialiseInvadingColony(number_alleles, initial_distribution_alleles, number_drone_matings, cost_homozygosity)
 
-        ## record simulation data (queen alleles, worker-laid drone allels, queen-laid drone alleles, population size)
+        ## record simulation data (queen alleles, worker-laid drone alleles, queen-laid drone alleles, population size)
         queen_allele_frequencies <- rbind( queen_allele_frequencies,
                                           tabulate(bin = population[population[ , number_alleles + 4] == 1, 1:2], nbins = number_alleles) /
                                           ( NROW( population[population[, number_alleles + 4] == 1] ) * 2 ) )
@@ -98,7 +98,7 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
                 break ## breaks out of for 1:number_generations loop
                 
             } else { ## not extinct, proceed normally
-                ## record simulation data (queen alleles, worker-laid drone allels, queen-laid drone alleles, population size)
+                ## record simulation data (queen alleles, worker-laid drone alleles, queen-laid drone alleles, population size)
                 queen_allele_frequencies <- rbind( queen_allele_frequencies,
                                                   tabulate(bin = population[population[ , number_alleles + 4] == 1, 1:2], nbins = number_alleles) /
                                                   ( NROW( population[population[, number_alleles + 4] == 1] ) * 2 ) )
