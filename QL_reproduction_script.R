@@ -1,15 +1,5 @@
 rm(list = ls())
 
-sim_name <- "QL_reproduction"
-
-## get and create directories, load functions file
-working_directory <- getwd()
-bash_date <- format(Sys.time(),format="%Y%m%d")
-function_file <- sprintf("%s/%s_%s_functions.R", working_directory, bash_date, sim_name)
-dir.create(file.path(working_directory, "/user_data/"), showWarnings = FALSE)
-output_directory <- sprintf("%s/user_data/", getwd())
-source(function_file)
-
 ## LOAD PACKAGES ##
 require("doMC")
 require("foreach")
@@ -57,6 +47,19 @@ num_trials <- 100
 num_cores <- 2
 ## set up parallel backend
 registerDoMC(cores = num_cores)
+
+## get name of the simulation (worker reproduction and founder status)
+reproduction_mode <- if (worker_reproduction_status) "worker_reproduction" else "no_worker_reproduction"
+founder_mode <- if (multiple_founder_status) "multiple_founder" else "single_founder"
+sim_name <- paste(reproduction_mode, founder_mode, sep = "_")
+
+## get and create directories, load functions file
+working_directory <- getwd()
+bash_date <- format(Sys.time(),format="%Y%m%d")
+function_file <- sprintf("%s/%s_%s_functions.R", working_directory, bash_date, sim_name)
+dir.create(file.path(working_directory, "/user_data/"), showWarnings = FALSE)
+output_directory <- sprintf("%s/user_data/", getwd())
+source(function_file)
 
 results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% { 
     
