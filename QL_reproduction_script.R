@@ -84,7 +84,7 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
         population_size[length(population_size) + 1] <- NROW(population) ## number of colonies left
 
         ## INVASION ##
-        for (generationloop in 1:number_generations){
+        for (generation_loop in 1:number_generations){
 
             ## iterate one generation
             list_output <- generateNewPopulation(population, number_alleles, number_drone_matings,
