@@ -103,10 +103,10 @@ calculateColonyFitness <- function(population, colony_ID, number_alleles, cost_h
     queen_allele_2_ID <- population[colony_ID, 2]
     ## determine proportion of homozygosity by multiplying each queen allele frequency (0.5) with the corresponding drone allele
     ## corresponding drone alleles are shifted 2 cols to the right (since the first 2 cols store the queen's genotype)
-    homozygosity_level <- 0.5 * population[colony_ID, queen_allele_ID_1 + 2] + 0.5 * population[colony_ID, queen_allele_ID_2 + 2]
-    homozygosity_cost <- homozygosity_level * cost_homozygosity
+    homozygosity_level <- 0.5 * population[colony_ID, queen_allele_1_ID + 2] + 0.5 * population[colony_ID, queen_allele_2_ID + 2]
+    homozygosity_fitness_cost <- homozygosity_level * cost_homozygosity
     ## set colony fitness
-    population[colony_ID, number_alleles + 3] <- 1 - homozygosity_cost
+    population[colony_ID, number_alleles + 3] <- 1 - homozygosity_fitness_cost
 
     return(population)
 }
