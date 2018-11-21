@@ -1,3 +1,24 @@
+initialiseInvadingColony <- function(number_alleles, initial_distribution_alleles, number_drone_matings, cost_homozygosity){
+    ## set up invading colony with queen alleles and drone matings from a source population    
+
+    ## initialise new colony
+    invading_colony <- matrix(numeric(2 + number_alleles + 2),nrow = 1, ncol = 2 + number_alleles + 2)
+
+    ## choose queen alleles of invader from the source population
+    invading_colony <- initialiseQueenAllelesFromSourcePop(invading_colony, number_alleles, initial_distribution_alleles)
+
+    ## choose which drones the invading queen mates with (also from source population, since she arrives already mated)
+    invading_colony <- chooseDroneAlleles(invading_colony, colony_ID = 1, number_alleles, number_drone_matings, initial_distribution_alleles)
+                                              
+    ## calculate fitness of invading colony
+    invading_colony <- calculateColonyFitness(invading_colony, colony_ID = 1, number_alleles, cost_homozygosity)
+    
+    ## assume colony remains queenright
+    invading_colony <- setColonyQueenStatus(invading_colony, number_alleles, colony_ID = 1, queen_status = 1)
+
+    return(invading_colony)
+}
+
 initialiseQueenAllelesFromSourcePop <- function(population, number_alleles, initial_distribution_alleles){
 
     repeat{ ## females must be heterozygous
@@ -11,7 +32,41 @@ initialiseQueenAllelesFromSourcePop <- function(population, number_alleles, init
     return(population)
 }
 
-setupDaughterColony <- function(population, new_population, old_colony_ID, number_alleles, prob_queen_survives){
+chooseDroneAlleles <- function(population, colony_ID, number_alleles, number_drone_matings, allele_distribution){
+    ## choose drones that mate with the queen, turn allele IDs into proportions, and add the queen's spermathecal contents to population
+    
+    ## sample the number_alleles in the population, in proportion to the drone allele_distribution, number_drone_matings times
+    sampled_drones <- sample(1:number_alleles, number_drone_matings, replace = TRUE, prob = allele_distribution)
+    ## transform these alleles into proportions
+    drone_proportions <- tabulate(bin = sampled_drones, nbins = number_alleles) / number_drone_matings
+    ## cols 3:(number_alleles + 2) represent the spermathecal contents
+    population[colony_ID, 3:(number_alleles + 2)] <- drone_proportions
+    
+    return(population)
+}
+
+calculateColonyFitness <- function(population, colony_ID, number_alleles, cost_homozygosity){
+    ## for QR colonies, fitness affects production of drones and daughter queens
+    ## for QL colonies, fitness only affects drone production
+    queen_allele_1_ID <- population[colony_ID, 1]
+    queen_allele_2_ID <- population[colony_ID, 2]
+    ## determine proportion of homozygosity by multiplying each queen allele frequency (0.5) with the corresponding drone allele
+    ## corresponding drone alleles are shifted 2 cols to the right (since the first 2 cols store the queen's genotype)
+    homozygosity_level <- 0.5 * population[colony_ID, queen_allele_1_ID + 2] + 0.5 * population[colony_ID, queen_allele_2_ID + 2]
+    homozygosity_fitness_cost <- homozygosity_level * cost_homozygosity
+    ## set colony fitness
+    population[colony_ID, number_alleles + 3] <- 1 - homozygosity_fitness_cost
+
+    return(population)
+}
+
+setColonyQueenStatus <- function(population, number_alleles, colony_ID, queen_status){
+    ## set colony status (1 = QR, 0 = QL)
+    population[colony_ID, number_alleles + 4] <- queen_status 
+    return(population)        
+}
+
+setupDaughterColony <- function(population, old_colony_ID, number_alleles, prob_queen_survives){
     ## get vector that I will rbind to new_population
     daughter_queen <- numeric(2 + number_alleles + 2)
     ## check whether the daughter queen dies or suvives
@@ -40,24 +95,10 @@ setupDaughterColony <- function(population, new_population, old_colony_ID, numbe
         daughter_queen[1:(number_alleles + 3)] <- population[old_colony_ID, 1:(number_alleles + 3)]
     }
     
-    new_population <- rbind(new_population, daughter_queen)
-    return(new_population)
+    return(daughter_queen)
     ## when the daughter colony remains QR, we still need spermathecal contents
     ## and colony fitness (for these, we must wait until daughter's mating flight)
     ## but when the daughter colony becomes immediately QL, the entry is complete
-}
-
-chooseDroneAlleles <- function(population, colony_ID, number_alleles, number_drone_matings, allele_distribution){
-    ## choose drones that mate with the queen, turn allele IDs into proportions, and add the queen's spermathecal contents to population
-    
-    ## sample the number_alleles in the population, in proportion to the drone allele_distribution, number_drone_matings times
-    sampled_drones <- sample(1:number_alleles, number_drone_matings, replace = TRUE, prob = allele_distribution)
-    ## transform these alleles into proportions
-    drone_proportions <- tabulate(bin = sampled_drones, nbins = number_alleles) / number_drone_matings
-    ## cols 3:(number_alleles + 2) represent the spermathecal contents
-    population[colony_ID, 3:(number_alleles + 2)] <- drone_proportions
-    
-    return(population)
 }
 
 produceDronesQueenright <- function(population, number_alleles, colony_ID, queen_laid_drone_alleles){
@@ -94,27 +135,6 @@ produceDronesQueenless <- function(population, number_alleles, colony_ID, worker
     worker_laid_drone_alleles <- worker_laid_drone_alleles + colony_i_drone_alleles
 
     return(worker_laid_drone_alleles)
-}
-
-calculateColonyFitness <- function(population, colony_ID, number_alleles, cost_homozygosity){
-    ## for QR colonies, fitness affects production of drones and daughter queens
-    ## for QL colonies, fitness only affects drone production
-    queen_allele_1_ID <- population[colony_ID, 1]
-    queen_allele_2_ID <- population[colony_ID, 2]
-    ## determine proportion of homozygosity by multiplying each queen allele frequency (0.5) with the corresponding drone allele
-    ## corresponding drone alleles are shifted 2 cols to the right (since the first 2 cols store the queen's genotype)
-    homozygosity_level <- 0.5 * population[colony_ID, queen_allele_1_ID + 2] + 0.5 * population[colony_ID, queen_allele_2_ID + 2]
-    homozygosity_fitness_cost <- homozygosity_level * cost_homozygosity
-    ## set colony fitness
-    population[colony_ID, number_alleles + 3] <- 1 - homozygosity_fitness_cost
-
-    return(population)
-}
-
-setColonyQueenStatus <- function(population, number_alleles, colony_ID, queen_status){
-    ## set colony status (1 = QR, 0 = QL)
-    population[colony_ID, number_alleles + 4] <- queen_status 
-    return(population)        
 }
 
 isColonyQR <- function(colony_ID, number_alleles, population){
@@ -167,7 +187,7 @@ generateNewPopulation <- function(population, number_alleles, number_drone_matin
                 ## loop through these daughter colonies
                 for (j in 1:number_daughter_colonies){
                     ## set up daughter colony (entry complete if it becomes QL; still need spermatheca and colony fitness if remain QR)
-                    new_population <- setupDaughterColony(population, new_population, old_colony_ID = i, number_alleles, prob_queen_survives)
+                    new_population <- rbind( new_population, setupDaughterColony(population, old_colony_ID = i, number_alleles, prob_queen_survives) )
                 }
             }
 
@@ -207,24 +227,4 @@ generateNewPopulation <- function(population, number_alleles, number_drone_matin
     list_output <- list(new_population, queen_laid_drone_alleles, worker_laid_drone_alleles)
     return(list_output)
     
-}
-
-initialiseInvadingColony <- function(number_alleles, initial_distribution_alleles, number_drone_matings, cost_homozygosity){
-    ## set up invading colony with queen alleles and drone matings from a source population    
-
-    ## initialise new colony
-    invading_colony <- matrix(numeric(2 + number_alleles + 2),nrow = 1, ncol = 2 + number_alleles + 2)
-
-    ## choose queen alleles of invader from the source population
-    invading_colony <- initialiseQueenAllelesFromSourcePop(invading_colony, number_alleles, initial_distribution_alleles)
-
-    ## choose which drones the invading queen mates with (also from source population, since she arrives already mated)
-    invading_colony <- chooseDroneAlleles(invading_colony, colony_ID = 1, number_alleles, number_drone_matings, initial_distribution_alleles)
-                                              
-    ## calculate fitness of invading colony
-    invading_colony <- calculateColonyFitness(invading_colony, colony_ID = 1, number_alleles, cost_homozygosity)
-    
-    ## assume colony remains queenright
-    invading_colony <- setColonyQueenStatus(invading_colony, number_alleles, colony_ID = 1, queen_status = 1)
-
 }
