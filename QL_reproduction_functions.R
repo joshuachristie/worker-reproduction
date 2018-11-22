@@ -81,12 +81,12 @@ generateNewPopulation <- function(population, number_alleles, number_drone_matin
     worker_laid_drone_alleles <- numeric(number_alleles)
     queen_laid_drone_alleles <- numeric(number_alleles)
     
-    for ( i in 1:NROW(population) ){ ## loop through current colonies
+    for ( i in 1:getNumberOfColonies(population) ){ ## loop through current colonies
         
         if ( isColonyQR(colony_ID = i, number_alleles, population) ){ ## is colony QR?
             ## the queen of a QR colony does not remate, so copy colony i exactly
             new_population <- rbind( new_population, population[i, ] )
-            colony_index <- NROW(new_population) ## will now operate on new_population[colony_index]
+            colony_index <- getNumberOfColonies(new_population) ## will now operate on new_population[colony_index]
             ## now the only consideration left is whether the colony remains QR
             ## if not, we need to change its status to QL
             colony_i_status <- as.integer(
@@ -127,7 +127,7 @@ generateNewPopulation <- function(population, number_alleles, number_drone_matin
     queen_laid_drone_alleles <- queen_laid_drone_alleles / drone_allele_sum
     
     ## loop through each colony in new_population, find surviving daughter queens (who will mate), and set spermathecal contents and colony fitness
-    for ( i in 1:NROW(new_population) ){
+    for ( i in 1:getNumberOfColonies(new_population) ) ){
 
         if ( sum( new_population[i, 3:(number_alleles + 3)] ) == 0 ){ ## surviving daughter queens
             new_population <- chooseDroneAlleles(new_population, colony_ID = i, number_alleles, number_drone_matings, worker_laid_drone_alleles + queen_laid_drone_alleles)
@@ -238,6 +238,18 @@ getColonyFitness <- function(colony_ID, number_alleles, population){
 }
 
 isColonyExtinct <- function(population, number_alleles){
-    ## test for extinction (either no colonies added (lhs) or those added are QL (rhs))
-    return( !as.logical( NROW(population) ) || !sum( population[ , number_alleles + 4] ) )
+    ## test for extinction (no colonies added or any colonies added are QL)
+    return( !nrow(population) || !sum( population[ , number_alleles + 4] ) )
+}
+
+getNumberOfColonies <- function(population){
+    ## returns number of colonies in the population
+
+    ## nrow doesn't work on vectors (gives NULL) but NROW treats vector as a col vector
+    if ( !is.null( nrow(population) ) ) {
+        number_colonies <- nrow(population)
+    } else { ## if nrow returns NULL, the matrix has collapsed to a vector and there's 1 colony
+        number_colonies <- 1
+    }
+    return(number_colonies)
 }

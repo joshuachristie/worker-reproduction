@@ -95,11 +95,9 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
 
             ## record simulation data (queen alleles, worker-laid drone alleles, queen-laid drone alleles, population size)
             ## normalised queen allele frequencies
-            normalised_queen_alleles <- tabulate(bin = population[population[ , number_alleles + 4] == 1, 1:2], nbins = number_alleles) /
-                ( NROW( population[population[ , number_alleles + 4] == 1,] ) * 2 )
+            tabulated_queen_alleles <- tabulate(bin = population[population[ , number_alleles + 4] == 1, 1:2], nbins = number_alleles)
+            normalised_queen_alleles <-  tabulated_queen_alleles / sum(tabulated_queen_alleles)
             
-            ## normalised_queen_alleles <-  normalised_queen_alleles / sum(normalised_queen_alleles)
-            ## ( NROW( population[ , number_alleles + 4] == 1 ) * 2 )
             queen_allele_frequencies <- rbind( queen_allele_frequencies, normalised_queen_alleles)
             ## check to make sure queen_allele_frequencies are properly normalised
             stopifnot(abs(1 - sum(normalised_queen_alleles)) < 0.0000001)
@@ -107,7 +105,7 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
             queen_laid_allele_distribution <- rbind( queen_laid_allele_distribution, unlist(list_output[2]) ) ## queen-laid drones
             worker_laid_allele_distribution <- rbind( worker_laid_allele_distribution, unlist(list_output[3]) ) ## worker-laid drones
             ## record number of colonies left
-            population_size[length(population_size) + 1] <- NROW(population)
+            population_size[length(population_size) + 1] <- getNumberOfColonies(population)
             
             ## condition for a new colony to invade from source population
             ## (this is the only difference between the single founder and multiple founder scenarios)
@@ -122,7 +120,7 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
         ## population is either extinct, or viable but finished number_generations
         if ( isColonyExtinct(population, number_alleles) ) { ## population is extinct
             ## record number of colonies left
-            population_size[length(population_size) + 1] <- NROW(population)
+            population_size[length(population_size) + 1] <- getNumberOfColonies(population)
             ## record number of generations before extinction
             generation_all_QR_colonies_lost <- generation_loop
             ## mark simulation status as "extinct"
