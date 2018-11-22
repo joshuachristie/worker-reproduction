@@ -56,7 +56,7 @@ sim_name <- paste(reproduction_mode, founder_mode, sep = "_")
 ## get and create directories, load functions file
 working_directory <- getwd()
 bash_date <- format(Sys.time(),format="%Y%m%d")
-function_file <- sprintf("%s/QL_reproduction_functions.R", working_directory)
+function_file <- sprintf("%s/functions.R", working_directory)
 dir.create(file.path(working_directory, "/user_data/"), showWarnings = FALSE)
 output_directory <- sprintf("%s/user_data/", getwd())
 source(function_file)
@@ -150,5 +150,3 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
 filename <- sprintf("%s/%s_%s_na%d_ch%d_as%d_pq%d_dm%d_qdp%d.RData",
                     output_directory,bash_date,sim_name,number_alleles,cost_homozygosity*100,average_swarms,probability_QL_colony*100,number_drone_matings, QL_drone_production)
 save(results, file = filename)
-
-
