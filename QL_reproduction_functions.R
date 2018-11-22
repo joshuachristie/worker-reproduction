@@ -127,7 +127,7 @@ generateNewPopulation <- function(population, number_alleles, number_drone_matin
     queen_laid_drone_alleles <- queen_laid_drone_alleles / drone_allele_sum
     
     ## loop through each colony in new_population, find surviving daughter queens (who will mate), and set spermathecal contents and colony fitness
-    for ( i in 1:getNumberOfColonies(new_population) ) ){
+    for ( i in 1:getNumberOfColonies(new_population) ){
 
         if ( sum( new_population[i, 3:(number_alleles + 3)] ) == 0 ){ ## surviving daughter queens
             new_population <- chooseDroneAlleles(new_population, colony_ID = i, number_alleles, number_drone_matings, worker_laid_drone_alleles + queen_laid_drone_alleles)
