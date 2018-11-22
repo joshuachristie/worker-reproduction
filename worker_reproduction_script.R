@@ -147,6 +147,7 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
     
 } ## end of the foreach loop
 
-filename <- sprintf("%s/%s_%s_na%d_ch%d_as%d_pq%d_dm%d_qdp%d.RData",
-                    output_directory,bash_date,sim_name,number_alleles,cost_homozygosity*100,average_swarms,probability_QL_colony*100,number_drone_matings, QL_drone_production)
+filename <- sprintf("%s/%s_%s_na%d_ch%d_as%d_pq%d_dm%d_qdp%d.RData", output_directory, bash_date,
+                    sim_name, number_alleles, cost_homozygosity*100, average_swarms,
+                    probability_QL_colony*100, number_drone_matings, QL_drone_production)
 save(results, file = filename)
