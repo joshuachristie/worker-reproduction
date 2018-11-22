@@ -20,6 +20,7 @@ initialiseInvadingColony <- function(number_alleles, initial_distribution_allele
 }
 
 initialiseQueenAllelesFromSourcePop <- function(population, number_alleles, initial_distribution_alleles){
+    ## choose alleles of invading queen from the source population (cols---1:2 of population)
 
     repeat{ ## females must be heterozygous
         ## choose queen alleles from source population
@@ -33,7 +34,8 @@ initialiseQueenAllelesFromSourcePop <- function(population, number_alleles, init
 }
 
 chooseDroneAlleles <- function(population, colony_ID, number_alleles, number_drone_matings, allele_distribution){
-    ## choose drones that mate with the queen, turn allele IDs into proportions, and add the queen's spermathecal contents to population
+    ## choose drones that mate with the queen, turn allele counts into proportions, and add the queen's
+    ## spermathecal contents to the colony_IDth row of the population (cols---3:(number_alleles + 2))
     
     ## sample the number_alleles in the population, in proportion to the drone allele_distribution, number_drone_matings times
     sampled_drones <- sample(1:number_alleles, number_drone_matings, replace = TRUE, prob = allele_distribution)
@@ -46,8 +48,10 @@ chooseDroneAlleles <- function(population, colony_ID, number_alleles, number_dro
 }
 
 calculateColonyFitness <- function(population, colony_ID, number_alleles, cost_homozygosity){
+    ## add the colony fitness of the colony_IDth row of the population (col---number_alleles + 3)
+
     ## for QR colonies, fitness affects production of drones and daughter queens
-    ## for QL colonies, fitness only affects drone production
+    ## for QL colonies, fitness only affects drone production (and only if worker_reproduction_status is TRUE)
     queen_allele_1_ID <- population[colony_ID, 1]
     queen_allele_2_ID <- population[colony_ID, 2]
     ## determine proportion of homozygosity by multiplying each queen allele frequency (0.5) with the corresponding drone allele
@@ -61,24 +65,102 @@ calculateColonyFitness <- function(population, colony_ID, number_alleles, cost_h
 }
 
 setColonyQueenStatus <- function(population, number_alleles, colony_ID, queen_status){
-    ## set colony status (1 = QR, 0 = QL)
+    ## set colony status (1 = QR, 0 = QL) of colony_IDth row of population (col---number_alleles + 4)
+
     population[colony_ID, number_alleles + 4] <- queen_status 
     return(population)        
 }
 
-setupDaughterColony <- function(population, old_colony_ID, number_alleles, prob_queen_survives){
+generateNewPopulation <- function(population, number_alleles, number_drone_matings, average_swarms,
+                                  prob_queen_survives, cost_homozygosity, QL_drone_production,
+                                  worker_reproduction_status){
+    ## calls functions to iterate the population through a full generation
+    
+    ## initialise matrix for new population and vectors for drone alleles
+    new_population <- matrix(nrow = 0, ncol = 2 + number_alleles + 2)
+    worker_laid_drone_alleles <- numeric(number_alleles)
+    queen_laid_drone_alleles <- numeric(number_alleles)
+    
+    for ( i in 1:NROW(population) ){ ## loop through current colonies
+        
+        if ( isColonyQR(colony_ID = i, number_alleles, population) ){ ## is colony QR?
+            ## the queen of a QR colony does not remate, so copy colony i exactly
+            new_population <- rbind( new_population, population[i, ] )
+            colony_index <- NROW(new_population) ## will now operate on new_population[colony_index]
+            ## now the only consideration left is whether the colony remains QR
+            ## if not, we need to change its status to QL
+            colony_i_status <- as.integer(
+                testAgainstRandomNumber( prob_queen_survives * getColonyFitness(colony_index, number_alleles, new_population) ) )
+            new_population <- setColonyQueenStatus(new_population, number_alleles, colony_index, colony_i_status)
+            
+            ## QR colony produces drones (no difference between those remaining QR and those becoming QL--we assume the queen is lost after drone production)
+            queen_laid_drone_alleles <- produceDronesQueenright(new_population, number_alleles, colony_index, queen_laid_drone_alleles)
+            ## QR colonies can produce daughter queens (even if they become QL because queen is lost after daughter queens have been raised)
+            number_daughter_colonies <- rpois( n = 1, lambda = average_swarms * getColonyFitness(colony_index, number_alleles, new_population) )
+            
+            if ( as.logical(number_daughter_colonies) ){ ## at least 1 daughter colony is produced
+                ## loop through these daughter colonies
+                for (j in 1:number_daughter_colonies){
+                    ## set up daughter colony
+                    new_population <- rbind( new_population, setupDaughterColony(new_population, colony_index, number_alleles, prob_queen_survives) )
+                }
+            }
+
+        } else if ( !isColonyQR(colony_ID = i, number_alleles, population) ) { ## it is QL (and became so last generation)
+            ## QL colony does not survive (so don't add to new_population) nor does it produce daughter queens
+            ## if workers can reproduce, colony produces drones via workers (proportional to QL_drone_production)
+            if ( worker_reproduction_status ){ ## workers can reproduce
+                worker_laid_drone_alleles <- produceDronesQueenless(population, number_alleles, colony_ID = i, worker_laid_drone_alleles, QL_drone_production)
+            }
+            
+        } else {
+            ## shouldn't execute
+            stopifnot(FALSE)
+        }
+
+    }
+
+    ## last step is for daughter queens that survive to mate (giving spermathecal contents), and from this, set colony fitness
+    ## first, normalise the worker- and queen-laid drones so that they sum to 1
+    drone_allele_sum <- sum(worker_laid_drone_alleles + queen_laid_drone_alleles)
+    worker_laid_drone_alleles <- worker_laid_drone_alleles / drone_allele_sum
+    queen_laid_drone_alleles <- queen_laid_drone_alleles / drone_allele_sum
+    
+    ## loop through each colony in new_population, find surviving daughter queens (who will mate), and set spermathecal contents and colony fitness
+    for ( i in 1:NROW(new_population) ){
+
+        if ( sum( new_population[i, 3:(number_alleles + 3)] ) == 0 ){ ## surviving daughter queens
+            new_population <- chooseDroneAlleles(new_population, colony_ID = i, number_alleles, number_drone_matings, worker_laid_drone_alleles + queen_laid_drone_alleles)
+            new_population <- calculateColonyFitness(new_population, colony_ID = i, number_alleles, cost_homozygosity)
+        }
+
+    }
+
+    ## sanity checks
+    ## workers should not reproduce if worker reproduction is turned off
+    if (!worker_reproduction_status) stopifnot( !sum(worker_laid_drone_alleles) )
+    ## drone alleles should be normalised
+    stopifnot( abs(1 - sum(worker_laid_drone_alleles + queen_laid_drone_alleles)) < 0.0000001) 
+    
+    ## in addition to population, I also want to return the drone distributions (for analysis)
+    list_output <- list(new_population, queen_laid_drone_alleles, worker_laid_drone_alleles)
+    return(list_output)
+    
+}
+
+setupDaughterColony <- function(population, mother_of_daughter_ID, number_alleles, prob_queen_survives){
     ## get vector that I will rbind to new_population
     daughter_queen <- numeric(2 + number_alleles + 2)
     ## check whether the daughter queen dies or suvives
     if ( testAgainstRandomNumber(prob_queen_survives) ){ ## daughter queen survives
         ## get distribution of alleles in her mother's spermatheca
-        spermathecal_contents <- population[old_colony_ID, 3:(number_alleles + 2)]
+        spermathecal_contents <- population[mother_of_daughter_ID, 3:(number_alleles + 2)]
         ## denote daughter queen's colony as QR (since she survives)
         daughter_queen[number_alleles + 4] <- 1
         
         repeat { ## females must be heterozygous
             ## allele of daughter queen that comes from her mother's genotype
-            daughter_queen[1] <- population[old_colony_ID, sample(1:2, 1)]
+            daughter_queen[1] <- population[mother_of_daughter_ID, sample(1:2, 1)]
             ## allele from daughter queen's mother's spermatheca
             daughter_queen[2] <- sample(1:number_alleles, 1, prob = spermathecal_contents)
             ## break out once daughter queen is heterozygous
@@ -92,7 +174,7 @@ setupDaughterColony <- function(population, old_colony_ID, number_alleles, prob_
         ## to capture this, make the "queen" of this QL colony the daughter queen's mother
         ## need queen genotype (1:2), spermatheca (3:(number_alleles + 2), and colony fitness (number_alleles + 3)
         ## QL/QR indicator (number_alleles + 4) is initialised as zero (indicating QL), so leave this alone
-        daughter_queen[1:(number_alleles + 3)] <- population[old_colony_ID, 1:(number_alleles + 3)]
+        daughter_queen[1:(number_alleles + 3)] <- population[mother_of_daughter_ID, 1:(number_alleles + 3)]
     }
     
     return(daughter_queen)
@@ -158,73 +240,4 @@ getColonyFitness <- function(colony_ID, number_alleles, population){
 isColonyExtinct <- function(population, number_alleles){
     ## test for extinction (either no colonies added (lhs) or those added are QL (rhs))
     return( !as.logical( NROW(population) ) || !sum( population[ , number_alleles + 4] ) )
-}
-
-generateNewPopulation <- function(population, number_alleles, number_drone_matings,
-                                  prob_queen_survives, cost_homozoygosity, QL_drone_production){
-    
-    
-    ## new population (start with no rows and rbind new colonies as I go)
-    new_population <- matrix(nrow = 0, ncol = 2 + number_alleles + 2)
-    
-    worker_laid_drone_alleles <- numeric(number_alleles)
-    queen_laid_drone_alleles <- numeric(number_alleles)
-    
-    for ( i in 1:NROW(population) ){
-        
-        if ( isColonyQR(colony_ID = i, number_alleles, population) ){ ## is colony QR?
-            ## copy colony i exactly (surviving queen does not remate)
-            new_population <- rbind( new_population, population[i, ] ) 
-            ## does it remain QR? (Queen survival is proportional to colony fitness.) If not, need to change status to QL
-            colony_i_status <- as.integer( testAgainstRandomNumber( prob_queen_survives * getColonyFitness(colony_ID = i, number_alleles, population) ) )
-            new_population <- setColonyQueenStatus(population, number_alleles, colony_ID = NROW(new_population), queen_status = colony_i_status)
-            ## QR colony produces drones (no difference between those remaining QR and those becoming QL--we assume the queen is lost after drone production)
-            queen_laid_drone_alleles <- produceDronesQueenright(population, number_alleles, colony_ID = i, queen_laid_drone_alleles)
-            ## QR colonies can produce daughter queens (even if they become QL because queen is lost after daughter queens have been raised)
-            number_daughter_colonies <- rpois( n = 1, lambda = average_swarms * getColonyFitness(colony_ID = i, number_alleles, population) )
-            
-            if ( as.logical(number_daughter_colonies) ){ ## at least 1 daughter colony is produced
-                ## loop through these daughter colonies
-                for (j in 1:number_daughter_colonies){
-                    ## set up daughter colony (entry complete if it becomes QL; still need spermatheca and colony fitness if remain QR)
-                    new_population <- rbind( new_population, setupDaughterColony(population, old_colony_ID = i, number_alleles, prob_queen_survives) )
-                }
-            }
-
-        } else if ( !isColonyQR(colony_ID = i, number_alleles, population) ) { ## it is QL (and became so last generation)
-            ## QL colony does not survive (so don't add to new_population) nor does it produce daughter queens
-            ## if workers can reproduce, colony produces drones via workers (proportional to QL_drone_production)
-            if ( worker_reproduction_status ){ ## workers can reproduce
-                worker_laid_drone_alleles <- produceDronesQueenless(population, number_alleles, colony_ID = i, worker_laid_drone_alleles, QL_drone_production)
-            }
-            
-        } else {
-            ## shouldn't execute
-            stopifnot(FALSE)
-        }
-
-    }
-
-    ## last step is for daughter queens that survive to mate (giving spermathecal contents), and from this, set colony fitness
-    ## first, get the distribution of drone alleles at the DCA (normalised so it sums to 1)
-    drone_allele_distribution <- (worker_laid_drone_alleles + queen_laid_drone_alleles) / sum(worker_laid_drone_alleles + queen_laid_drone_alleles)
-    stopifnot( sum(drone_allele_distribution) == 1)
-    
-    ## loop through each colony in new_population, find surviving daughter queens (who will mate), and set spermathecal contents and colony fitness
-    for ( i in 1:NROW(new_population) ){
-
-        if ( sum( new_population[i, 3:(number_alleles + 3)] ) == 0 ){ ## surviving daughter queens
-            new_population <- chooseDroneAlleles(new_population, colony_ID = i, number_alleles, number_drone_matings, drone_allele_distribution)
-            new_population <- calculateColonyFitness(new_population, colony_ID = i, number_alleles, cost_homozygosity)
-        }
-
-    }
-
-    ## sanity check
-    stopifnot(!sum(worker_laid_drone_alleles) && !worker_reproduction_status) ## workers should not reproduce if worker reproduction is turned off
-
-    ## in addition to population, I also want to return the drone distributions (for analysis)
-    list_output <- list(new_population, queen_laid_drone_alleles, worker_laid_drone_alleles)
-    return(list_output)
-    
 }
