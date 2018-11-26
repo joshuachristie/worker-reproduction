@@ -63,8 +63,6 @@ source(function_file)
 
 results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% { 
 
-    repeat { ## if the population goes extinct, I want to repeat the simulation (to standarize the number of "successful" invasions  
-
         temp_list <- list()
 
         ## initialise objects to store information about the simulation
@@ -125,16 +123,13 @@ results <- foreach (loop = 1:num_trials, .combine = rbind) %dopar% {
             generation_all_QR_colonies_lost <- generation_loop
             ## mark simulation status as "extinct"
             simulation_extinction_status <- 0
-            ## simulation will "repeat"
+
         } else { ## population finished number_generations (don't need to record population size (done above)
             generation_all_QR_colonies_lost <- generation_loop ## will record number_generations
             ## mark simulation status as "not extinct"
             simulation_extinction_status <- 1
-            break ## transfer control to foreach loop (don't want to repeat)
         }
-        
-    } ## end of the repeat loop
-    
+
     ## record simulation 
     temp_list[[1]] <- queen_allele_frequencies
     temp_list[[2]] <- queen_laid_allele_distribution
