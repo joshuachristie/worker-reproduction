@@ -33,8 +33,6 @@ multiple_founder_status <- TRUE
 number_generations <- 6
 ## number of generations before second invasion (if applicable)
 generations_before_invasion <- 4
-## number of generations after second invasion (if applicable)
-generations_after_invasion <- number_generations - generations_before_invasion
 
 ## SIMULATION PARAMETERS ##
 ## number of monte carlo replicates
