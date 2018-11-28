@@ -19,10 +19,6 @@ cost_homozygosity <- 0.05
 probability_QL_colony <- 0.3
 #probability that queen AND colony survives each generation
 prob_queen_survives <- 1 - probability_QL_colony
-## proportion of swarms that become queen-less
-probability_QL_colony <- 0.3
-## probability that queen AND colony survives each generation
-prob_queen_survives <- 1 - probability_QL_colony
 ## mean swarms per colony
 average_swarms <- 2
 ## worker reproduction status (TRUE = QL colonies produce workers; FALSE = QL colonies do not produce workers)
