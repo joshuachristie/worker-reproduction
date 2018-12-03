@@ -2,8 +2,8 @@
 
 ** Manuscript data and analysis script
 
-Data underlying Tables 1, S3, and S4 is in ~manuscript_data/~. To produce a summary file of the data, run ~analysis.R~, making sure that your ~R~ working directory contains ~analysis.R~ and ~manuscript_data/~. After running ~analysis.R~, the summary file will appear in ~manuscript_data/~.
+Simulation data for the manuscript is in ~manuscript_data/~. To produce a summary file of the data, run the analysis script by entering ~source('analysis.R')~ into an ~R~ terminal (first ensuring that your working directory points to the directory containing the scripts---you can change your working directory using the ~setwd('/insert/the/path/here')~ function). After running ~analysis.R~, the summary file will appear in ~manuscript_data/~.
 
 ** Running simulations with new sets of parameter values
 
-To run simulations with your own sets of parameter values, you can alter the parameter values at the top of the ~.R~ scripts. To run a simulation with a single invading colony and worker reproduction (for example), enter ~source('QL_reproduction_script.R')~. Ensure that the working directory contains both the script and corresponding functions file. Any simulations that you run will show up in ~user_data/~ as ~.RData~ files.
+To run simulations with your own sets of parameter values, you can alter the parameter values at the top of ~worker_reproduction_script.R~ (using ~source('worker_reproduction_script.R')~). Any simulations that you run will show up in ~user_data/~ as ~.RData~ files. You can analyse the data in these simulations by running ~analysis.R~, but you'll first need to uncomment line 19 (its default behaviour is to analyse data in ~/manuscript_data/~, reproducing the analysis in the manuscript).
