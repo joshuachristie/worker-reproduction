@@ -9,7 +9,7 @@ getParameterValue <- function(parameter, string){
 }
 
 ## parameter values
-num_cols <- 48
+num_cols <- 49
 num_gen <- 6
 counter <- 1
 dm <- 25
@@ -51,8 +51,9 @@ for (filename in file_names){
     queen_laid_alleles_matrix <- matrix(nrow=0,ncol=num_gen)
     DMP_combined <- matrix(nrow=0,ncol=num_gen)
     difference_queen_worker_drone <- matrix(nrow=0,ncol=num_gen)
+    mean_freq_difference_queen_worker_drone <- {} ## record mean frequency of drone alleles in worker-laid but not queen-laid fraction
     population_size_vector <- {} ## this will record population size for each simulation but for generation 6 only
-
+    
     ## get indices of those simulations that completed without the population going extinct
     sims_with_no_extinction <- as.logical(unlist(results[,5]))
     ## get number of simulations
@@ -93,6 +94,11 @@ for (filename in file_names){
                 difference_logical <- !queen_laid_logical & worker_laid_logical
                 ## get number of alleles fitting this criterion
                 diff_temp[j] <- sum(difference_logical)
+                ## get mean frequency of alleles fitting this criterion
+                if (j == num_gen ){ ## only want gen 6
+                    mean_freq_difference_queen_worker_drone[length(mean_freq_difference_queen_worker_drone) + 1] <-
+                        mean(worker_laid_alleles[j, difference_logical])
+                }
                 
                 stopifnot(abs(sum(queen_laid_alleles[j, ] + worker_laid_alleles[j, ])- 1) < 0.00000001)
                 
@@ -107,7 +113,6 @@ for (filename in file_names){
             queen_alleles_matrix <- rbind(queen_alleles_matrix, queen_alleles_temp)
             queen_laid_alleles_matrix <- rbind(queen_laid_alleles_matrix, queen_laid_alleles_temp)
             worker_laid_alleles_matrix <- rbind(worker_laid_alleles_matrix, worker_laid_alleles_temp)
-            
         }
         
     }
@@ -148,33 +153,35 @@ for (filename in file_names){
     summary[counter,34] <- mean(difference_queen_worker_drone[,4])
     summary[counter,35] <- mean(difference_queen_worker_drone[,5])
     summary[counter,36] <- mean(difference_queen_worker_drone[,6])
+    ## get mean allele freq in fraction of worker-laid alleles that don't appear in the queen-laid fraction
+    summary[counter,37] <- mean(mean_freq_difference_queen_worker_drone, na.rm = TRUE)
     ## get proportion of extinctions
-    summary[counter,37] <- 1-sum(unlist(results[,5]))/num_sims
+    summary[counter,38] <- 1-sum(unlist(results[,5]))/num_sims
 
     ## mean generation in which extinctions occur
     gen_QR_lost <- unlist(results[,6][!sims_with_no_extinction])
     ## get mean generation in which extinctions occur
-    summary[counter,38] <- mean(gen_QR_lost)
+    summary[counter,39] <- mean(gen_QR_lost)
     ## get proportion of extinctions that occur in generation 1
-    summary[counter,39] <- sum(gen_QR_lost == 1)/length(gen_QR_lost)
+    summary[counter,40] <- sum(gen_QR_lost == 1)/length(gen_QR_lost)
     ## get mean population size at gen 6
-    summary[counter,40] <- mean(population_size_vector)
+    summary[counter,41] <- mean(population_size_vector)
     ## get mean DMP production for each generation
-    summary[counter,41] <- mean(DMP_combined[ , 1])
-    summary[counter,42] <- mean(DMP_combined[ , 2])
-    summary[counter,43] <- mean(DMP_combined[ , 3])
-    summary[counter,44] <- mean(DMP_combined[ , 4])
-    summary[counter,45] <- mean(DMP_combined[ , 5])
-    summary[counter,46] <- mean(DMP_combined[ , 6])
+    summary[counter,42] <- mean(DMP_combined[ , 1])
+    summary[counter,43] <- mean(DMP_combined[ , 2])
+    summary[counter,44] <- mean(DMP_combined[ , 3])
+    summary[counter,45] <- mean(DMP_combined[ , 4])
+    summary[counter,46] <- mean(DMP_combined[ , 5])
+    summary[counter,47] <- mean(DMP_combined[ , 6])
     ## sd and range for gen 6
-    summary[counter,47] <- sd(DMP_combined[ , 6])
-    summary[counter,48] <- sprintf('%1.2f--%1.2f', range(DMP_combined[ , 6])[1],range(DMP_combined[ , 6])[2])
+    summary[counter,48] <- sd(DMP_combined[ , 6])
+    summary[counter,49] <- sprintf('%1.2f--%1.2f', range(DMP_combined[ , 6])[1],range(DMP_combined[ , 6])[2])
 
     counter <- counter + 1
     
 }
 
-colnames(summary) <- c("sim type", "cost homozygosity",	"alleles", "swarm", "QLness rate", "QL drone competitiveness",  "mean queen alleles @ gen 1","mean queen alleles @ gen 2","mean queen alleles @ gen 3","mean queen alleles @ gen 4","mean queen alleles @ gen 5", "mean queen alleles @ gen 6", "sd @ gen 6", "median @ gen 6", "mean queen-laid drone alleles @ gen 1", "mean queen-laid drone alleles @ gen 2", "mean queen-laid drone alleles @ gen 3", "mean queen-laid drone alleles @ gen 4", "mean queen-laid drone alleles @ gen 5", "mean queen-laid drone alleles @ gen 6", "sd @ gen 6", "median @ gen 6", "mean worker-laid drone alleles @ gen 1", "mean worker-laid drone alleles @ gen 2", "mean worker-laid drone alleles @ gen 3", "mean worker-laid drone alleles @ gen 4", "mean worker-laid drone alleles @ gen 5", "mean worker-laid drone alleles @ gen 6", "sd @ gen 6", "median @ gen 6", "mean alleles carried in worker-laid fraction not found in queen-laid fraction @ gen 1", "mean alleles carried in worker-laid fraction not found in queen-laid fraction @ gen 2", "mean alleles carried in worker-laid fraction not found in queen-laid fraction @ gen 3","mean alleles carried in worker-laid fraction not found in queen-laid fraction @ gen 4","mean alleles carried in worker-laid fraction not found in queen-laid fraction @ gen 5","mean alleles carried in worker-laid fraction not found in queen-laid fraction @ gen 6","proportion of extinctions", "mean gen in which extinction occurs (all QR colonies lost)", "proportion of extinctions that were @ gen 1", "population size @ gen6", "DMP @ gen 1", "DMP @ gen 2", "DMP @ gen 3", "DMP @ gen 4", "DMP @ gen 5", "DMP at gen 6", "sd @ gen6", "range @ gen6")
+colnames(summary) <- c("sim type", "cost homozygosity",	"alleles", "swarm", "QLness rate", "QL drone competitiveness",  "mean queen alleles @ gen 1","mean queen alleles @ gen 2","mean queen alleles @ gen 3","mean queen alleles @ gen 4","mean queen alleles @ gen 5", "mean queen alleles @ gen 6", "sd @ gen 6", "median @ gen 6", "mean queen-laid drone alleles @ gen 1", "mean queen-laid drone alleles @ gen 2", "mean queen-laid drone alleles @ gen 3", "mean queen-laid drone alleles @ gen 4", "mean queen-laid drone alleles @ gen 5", "mean queen-laid drone alleles @ gen 6", "sd @ gen 6", "median @ gen 6", "mean worker-laid drone alleles @ gen 1", "mean worker-laid drone alleles @ gen 2", "mean worker-laid drone alleles @ gen 3", "mean worker-laid drone alleles @ gen 4", "mean worker-laid drone alleles @ gen 5", "mean worker-laid drone alleles @ gen 6", "sd @ gen 6", "median @ gen 6", "mean alleles carried in worker-laid fraction not found in queen-laid fraction @ gen 1", "mean alleles carried in worker-laid fraction not found in queen-laid fraction @ gen 2", "mean alleles carried in worker-laid fraction not found in queen-laid fraction @ gen 3","mean alleles carried in worker-laid fraction not found in queen-laid fraction @ gen 4","mean alleles carried in worker-laid fraction not found in queen-laid fraction @ gen 5","mean alleles carried in worker-laid fraction not found in queen-laid fraction @ gen 6", "mean frequency of alleles carried in worker-laid fraction not found in queen-laid fraction @ gen 6","proportion of extinctions", "mean gen in which extinction occurs (all QR colonies lost)", "proportion of extinctions that were @ gen 1", "population size @ gen6", "DMP @ gen 1", "DMP @ gen 2", "DMP @ gen 3", "DMP @ gen 4", "DMP @ gen 5", "DMP at gen 6", "sd @ gen6", "range @ gen6")
 
 output_filename <- sprintf('%sdata_summary.csv', path_to_folder)
 
