@@ -2,7 +2,7 @@
 
 ** Manuscript data and analysis script
 
-Simulation data for the manuscript are in ~manuscript_data/~. To produce a summary file of the data, run the analysis script by entering ~source('analysis.R')~ into an ~R~ terminal (first ensuring that your working directory points to the directory containing the scripts---you can change your working directory using the ~setwd('/insert/the/path/here')~ function). After running ~analysis.R~, the summary file will appear in ~manuscript_data/~. All data in the manuscript pertaining to simulation results are contained within ~/manuscript_data/data_summary.csv~.
+Raw simulation data for the manuscript are in ~manuscript_data/~ as ~.RData~ files. To replicate the analysis of the simulations, run the analysis script by entering ~source('analysis.R')~ into an ~R~ terminal (first ensuring that your working directory points to the directory containing the scripts---you can change your working directory using the ~setwd('/insert/the/path/here')~ function). After running ~analysis.R~, the summary file will appear in ~manuscript_data/~. All data in the manuscript pertaining to simulation results are contained within ~/manuscript_data/data_summary.csv~.
 
 ** Running simulations with new sets of parameter values
 
