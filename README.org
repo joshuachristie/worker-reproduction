@@ -1,4 +1,4 @@
-* Simulation code and data for /Workers’ sons rescue genetic diversity at the sex locus in an invasive honey bee population/ by Gloag et al.
+* Simulation code and data for /Workers’ sons rescue genetic diversity at the sex locus in an invasive honey bee population/ by Gloag et al (2019), published in [[https://onlinelibrary.wiley.com/doi/abs/10.1111/mec.15031][Molecular Ecology].
 
 ** Manuscript data and analysis script
 
